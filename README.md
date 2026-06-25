@@ -1,6 +1,6 @@
 # ESGIntel — AI-Assisted ESG Due Diligence Platform
 
-> **v2 Update** — ESGIntel has been significantly expanded. v2 adds a document generation engine, custom authentication system, and a hardened low-data intelligence pipeline. See changelog below.
+> **v2 Update** — ESGIntel v2 adds a document generation engine, custom authentication system, and a hardened low-data intelligence pipeline. See changelog below.
 
 ---
 
@@ -17,7 +17,6 @@ The platform is built around a core philosophy: **AI handles qualitative interpr
 - **Document Generation Engine** — export assessments to PDF, Word (.docx), PowerPoint (.pptx), and Excel (.xlsx) directly from the platform
 - **Authentication System** — custom FastAPI auth with Google OAuth, X/Twitter OAuth, email magic-link codes, and JWT sessions (replaces demo bypass)
 - **Low-Data Intelligence Pipeline** — hardened public intelligence mode with evidence-weighted confidence scoring and explicit disclosure gap analysis
-- **Security** — `.env` scrubbed from git history; secrets are now loaded via `.env.example` template only
 
 ---
 
@@ -37,7 +36,7 @@ When no primary documents are available, the platform automatically switches to 
 - **Policy maturity scoring** on a five-level scale (from no evidence → integrated management system)
 - **Dynamic weighting**: Python automatically adjusts the quantitative/qualitative split based on available data (data-rich = up to 80% quant weighting; no data = 100% qualitative, flagged accordingly)
 
-### Dual Materiality Assessment
+### Double Materiality Assessment
 Maps topics against both financial materiality and impact materiality, drawing on SASB sector standards, ESRS (European Sustainability Reporting Standards), and GRI 3. Material topics are filtered dynamically by NACE sector, business model, and geography — not from a static generic checklist.
 
 ### Climate Risk Analysis
