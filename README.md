@@ -1,4 +1,4 @@
-# ESGIntel — AI-Assisted ESG Due Diligence Platform
+# ESGIntel — AI-Assisted Risk Assessment and Stakeholer Engagement Platform
 
 > **v3** — The platform's envisioned product UI is now a live, backend-wired application. This release connects the full design to the real analysis engine, adds real benchmarking and climate-scenario modelling, hardens the document-discovery pipeline for JS-gated corporate sites, and ships as an honest demo build. 
 
