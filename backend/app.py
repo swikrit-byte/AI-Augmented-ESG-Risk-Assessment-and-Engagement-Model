@@ -17,7 +17,12 @@ from fastapi.responses import JSONResponse, FileResponse, Response
 from dotenv import load_dotenv
 import anthropic
 import pdfplumber
-from pdf_pipeline import run_pdf_pipeline, enrich_analysis, discover_and_get_pdf_texts
+from pdf_pipeline import (
+    run_pdf_pipeline, enrich_analysis, discover_and_get_pdf_texts,
+    build_validation_rows, _call_opus_extract,
+)
+from benchmark_data import compute_benchmarking
+from climate_scenarios import compute_climate_scenarios
 
 load_dotenv()
 
@@ -62,6 +67,16 @@ init_auth_db()
 #     policies .docx, templates .xlsx) ───
 from documents_api import documents_router
 app.include_router(documents_router)
+
+# ─── Admin panel (user management, platform stats, CSV export) ───
+from admin_api import admin_router, init_admin_db
+app.include_router(admin_router)
+init_admin_db()
+
+# ─── Account / settings (profile, API keys, team invites) ───
+from account_api import account_router, init_account_db
+app.include_router(account_router)
+init_account_db()
 
 @app.get("/app")
 async def serve_frontend():
@@ -466,7 +481,10 @@ ASSESSMENT CONTEXT (use this to tailor material topics, risks and sector exposur
       "severity": "Critical|High|Medium|Low",
       "category": "environmental|social|governance|climate",
       "framework": "e.g. ESRS E1, SASB IF-ST",
-      "detail": "2-3 sentence risk description and top recommendation"
+      "detail": "2-3 sentence risk description and top recommendation",
+      "key_driver": "short phrase naming the primary underlying cause",
+      "horizon": "Short-term|Medium-term|Long-term",
+      "financial_impact": "estimated exposure band, e.g. '€2-5M' or a qualitative band 'Low'/'Moderate'/'High'"
     }}
   ],
   "climate": {{
@@ -595,6 +613,9 @@ Return a JSON object matching this exact schema. Higher risk scores (0-100) = gr
       "category": "environmental|social|governance|climate",
       "framework": "e.g. ESRS E1, SASB",
       "detail": "2-3 sentences — risk description, sector exposure rationale, and top recommendation",
+      "key_driver": "short phrase naming the primary underlying cause",
+      "horizon": "Short-term|Medium-term|Long-term",
+      "financial_impact": "estimated exposure band, e.g. '€2-5M' or a qualitative band 'Low'/'Moderate'/'High'",
       "confidence": "high|medium|low",
       "evidence": "observable evidence or 'No disclosure — risk inferred from sector/geography'"
     }}
@@ -754,6 +775,9 @@ Using the profile context above AND the source text below, return a JSON object 
     "name": "risk name", "score": <0-100>, "severity": "Critical|High|Medium|Low",
     "category": "environmental|social|governance|climate", "framework": "e.g. ESRS E1, SASB IF-ST",
     "detail": "2-3 sentence risk description",
+    "key_driver": "short phrase (max ~8 words) naming the primary underlying cause of this risk",
+    "horizon": "Short-term|Medium-term|Long-term",
+    "financial_impact": "estimated financial exposure band as a string, e.g. '€2-5M', '€10-25M', or a qualitative band like 'Low' / 'Moderate' / 'High' if a figure would be false precision",
     "recommendation": "specific actionable recommendation",
     "evidence": [{{ "source": "doc name / page / URL / AI inference", "text": "what was found", "confidence": "high|medium|low", "type": "quantitative|qualitative|inferred" }}],
     "kpis": [{{ "metric": "string", "value": "string or null", "unit": "string", "benchmark": "string or null", "percentile": "string or null", "year": "string or null", "source": "string or null" }}]
@@ -1244,6 +1268,45 @@ def run_analysis(
                 result["pdf_intelligence"] = {"error": str(pdf_err)}
                 log(f"Phase 2 error: {str(pdf_err)[:60]}", done=True)
 
+        # ══════════════════════════════════════════════════════════════
+        # PHASE 3 — DETERMINISTIC ANALYTICS (no LLM, no network)
+        # Real sector benchmarking (z-score/percentile/quartile) + NGFS
+        # climate scenario financials + stranded-asset / resilience scoring.
+        # Pure Python — always runs, cannot fail the analysis.
+        # ══════════════════════════════════════════════════════════════
+        try:
+            sector_code = nace_code or (result.get("company") or {}).get("nace_code") or ""
+
+            # ── Benchmarking: fill previously-null z_score/percentile and add
+            #    sector_avg + quartile per pillar, PRESERVING Claude's narratives.
+            computed_bm = compute_benchmarking(result.get("esg_scores") or {}, sector_code)
+            bm = result.get("benchmarking") or {}
+            for pillar in ("overall", "environmental", "social", "governance"):
+                stats = computed_bm.get(pillar)
+                if not stats:
+                    continue
+                block = bm.get(pillar) or {}
+                block.update(stats)   # z_score, percentile, sector_avg, quartile
+                bm[pillar] = block
+            bm["sector_reference"] = computed_bm.get("sector_reference")
+            result["benchmarking"] = bm
+
+            # ── Climate scenarios + stranded-asset / resilience scoring.
+            climate = result.get("climate") or {}
+            scen = compute_climate_scenarios(
+                climate,
+                nace_code=sector_code,
+                revenue=revenue,
+                employees=employees,
+                policy_maturity=result.get("policy_maturity"),
+            )
+            climate.update(scen)      # scenarios, stranded_asset_score, resilience_*
+            result["climate"] = climate
+
+            log("Benchmarking & climate scenarios computed", done=True)
+        except Exception as calc_err:
+            log(f"Analytics computation error: {str(calc_err)[:60]}", done=True)
+
         log(f"Assessment ready ✓", done=True)
 
         conn.execute(
@@ -1316,6 +1379,100 @@ async def analyze_company(
     )
 
     return {"id": analysis_id, "status": "processing"}
+
+
+# ─────────────────────────────────────────────
+# Data Validation — lightweight pre-run KPI review
+# ─────────────────────────────────────────────
+def _run_validation(company_name: str, docs: list, website_url: str):
+    """Lightweight pre-run extraction (blocking — runs in a threadpool).
+
+    Runs ONLY the KPI extraction step (Opus per-document) — NOT the full
+    two-call Claude analysis pipeline. `docs` is a list of (filename, text).
+    Reuses discover_and_get_pdf_texts / _call_opus_extract / build_validation_rows
+    from pdf_pipeline. Creates its own event loop for the async discovery step,
+    mirroring run_analysis().
+    Returns (rows, documents_parsed).
+    """
+    import asyncio
+    extracted_docs = []
+
+    # ── Uploaded documents ──
+    for filename, text in docs:
+        if not text or len(text) < 500:
+            continue
+        try:
+            doc_data = _call_opus_extract(text, company_name, filename)
+            doc_data["_source_url"] = ""
+            doc_data["_filename"] = filename
+            extracted_docs.append(doc_data)
+        except Exception:
+            pass
+
+    # ── Website report discovery (Phase-1 discovery only — no full pipeline) ──
+    if website_url:
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            pdfs = loop.run_until_complete(
+                discover_and_get_pdf_texts(company_name, website_url)
+            )
+            loop.close()
+        except Exception:
+            pdfs = []
+        for pdf in (pdfs or []):
+            text = pdf.get("text", "")
+            if not text or len(text) < 500:
+                continue
+            fname = pdf.get("filename", "report.pdf")
+            try:
+                doc_data = _call_opus_extract(text, company_name, fname)
+                doc_data["_source_url"] = pdf.get("url", "")
+                doc_data["_filename"] = fname
+                extracted_docs.append(doc_data)
+            except Exception:
+                pass
+
+    return build_validation_rows(extracted_docs), len(extracted_docs)
+
+
+@app.post("/api/validate")
+async def validate_inputs(
+    company_name: str = Form(...),
+    documents: Optional[list[UploadFile]] = File(None),
+    website_url: Optional[str] = Form(None),
+):
+    """
+    Data Validation pre-run endpoint.
+
+    Accepts the same inputs as the start of /api/analyze (uploaded documents
+    and/or a website URL) but runs ONLY the lightweight parsing/KPI-extraction
+    step — NOT the expensive multi-call Claude analysis. Returns parsed KPI rows
+    so the frontend can show a review screen before committing to a full run.
+
+    Each row: {metric, value, unit, year, source, confidence, flagged, flag_reason}.
+    """
+    docs = []
+    for doc in (documents or []):
+        content = await doc.read()
+        docs.append((doc.filename, extract_text(content, doc.filename)))
+
+    if not docs and not website_url:
+        raise HTTPException(400, "Provide at least one document or a website_url")
+
+    import asyncio
+    rows, n_docs = await asyncio.get_event_loop().run_in_executor(
+        None, _run_validation, company_name, docs, website_url or ""
+    )
+
+    flagged = sum(1 for r in rows if r.get("flagged"))
+    return {
+        "company_name": company_name,
+        "documents_parsed": n_docs,
+        "kpi_count": len(rows),
+        "flagged_count": flagged,
+        "rows": rows,
+    }
 
 
 @app.get("/api/analyses")

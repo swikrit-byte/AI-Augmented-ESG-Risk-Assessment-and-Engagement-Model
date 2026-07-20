@@ -2,7 +2,7 @@
 ESGIntel — One-Pager PDF Generator
 ====================================
 Produces three McKinsey-style single-page PDF executive leave-behinds for
-{D.COMPANY['short']} S.p.A.  All figures sourced from company_data (single source of
+{cd.COMPANY['short']} S.p.A.  All figures sourced from company_data (single source of
 truth — never invent numbers).
 
 Public API
@@ -176,7 +176,7 @@ def _footer(c):
     """Confidential footer at page bottom."""
     y = MARGIN_B - 4 * mm
     _hline(c, MARGIN_L, y + 8, CONTENT_W)
-    _text(c, PW / 2, y + 2, f"ESGIntel — CONFIDENTIAL  ·  {D.COMPANY['short']} S.p.A.  ·  June 2024",
+    _text(c, PW / 2, y + 2, f"ESGIntel — CONFIDENTIAL  ·  {cd.COMPANY['short']} S.p.A.  ·  June 2024",
           font=FONT_BODY, size=6.5, color=MUTED, align="center")
 
 

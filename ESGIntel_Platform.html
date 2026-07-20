@@ -141,6 +141,10 @@
   .sidebar-action-btn .sa-chevron { font-size: 13px; color: var(--text-muted); flex-shrink: 0; }
   .sidebar-action-btn.sa-primary .sa-icon-box { background: var(--accent-light); }
   .sidebar-action-btn.sa-primary .sa-title { color: var(--accent); }
+  /* Active state — applied only while that button's page is open (matches nav-item behaviour) */
+  .sidebar-action-btn.active { background: var(--accent-light); border-color: var(--accent); }
+  .sidebar-action-btn.active .sa-icon-box { background: var(--accent); }
+  .sidebar-action-btn.active .sa-title { color: var(--accent); }
   /* ===== PROFILE DROPDOWN ===== */
   .topbar-profile { position: relative; margin-left: auto; }
   .profile-btn {
@@ -774,8 +778,14 @@
   .signal-dot.positive { background: var(--green-mid); }
   .signal-dot.negative { background: var(--red-mid); }
   .signal-dot.emerging { background: var(--amber-mid); }
+  .signal-dot.green { background: var(--green-mid); }
+  .signal-dot.red { background: var(--red-mid); }
+  .signal-dot.amber { background: var(--amber-mid); }
   .signal-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
   .signal-src { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .signal-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .signal-row:hover { background: var(--surface-2); margin: 0 -8px; padding: 9px 8px; border-radius: 4px; }
+  .signal-label { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
 
   /* ===== RISK OVERVIEW STRIP ===== */
   .risk-overview-strip {
@@ -1298,17 +1308,17 @@
       <circle cx="23" cy="15" r="1.4" fill="#1a56db"/>
     </svg>
     <div>
-      <div>ESGIntel</div>
+      <div style="display:flex;align-items:center;gap:6px">ESGIntel<span style="font-size:8px;font-weight:800;letter-spacing:.5px;color:var(--amber-mid);background:var(--amber-light);border:1px solid var(--amber-mid);border-radius:4px;padding:1px 4px;text-transform:uppercase;line-height:1.4">Demo</span></div>
     </div>
   </div>
   <div class="topbar-company">
-    <span class="company-chip">VerdaSteelCo</span>
-    <span class="nace-chip">NACE C24 — Basic Metals</span>
-    <span class="topbar-meta">Assessment run: 07 Jun 2025 · 3 documents · 28 KPIs</span>
+    <span class="company-chip">No assessment loaded</span>
+    <span class="nace-chip">Sector —</span>
+    <span class="topbar-meta">Run an assessment to load results</span>
   </div>
   <div id="topbar-confidence" style="display:flex;align-items:center;gap:6px;padding:0 12px;border-left:1px solid var(--border);margin-right:4px">
     <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px">Confidence</span>
-    <span style="font-size:14px;font-weight:800;color:var(--green-mid)">72%</span>
+    <span style="font-size:14px;font-weight:800;color:var(--text-muted)">—</span>
   </div>
   <div class="topbar-profile">
     <div class="profile-btn" onclick="toggleProfileMenu()">
@@ -1395,7 +1405,7 @@
         </div>
         <span class="sa-chevron">›</span>
       </button>
-      <button class="sidebar-action-btn sa-primary" onclick="navigate('report')">
+      <button class="sidebar-action-btn" onclick="navigate('report')">
         <div class="sa-icon-box">📄</div>
         <div class="sa-text">
           <div class="sa-title">Generate Report</div>
@@ -1737,13 +1747,13 @@
   <div class="snapshot-bar">
     <div class="snapshot-left">
       <div class="snapshot-meta">🔍 Analyst Snapshot</div>
-      <div id="snapshot-narrative" class="snapshot-narrative">VerdaSteelCo presents a <strong style="color:#fc8181">High ESG Risk</strong> profile driven primarily by carbon-intensive steelmaking operations (Scope 1: 842,000 tCO2e), inadequate climate transition governance, and elevated occupational safety risks relative to sector peers. The company scores in the bottom quartile for GHG intensity (1,265 tCO2e/€m revenue vs. sector median of 890) and has no science-based emissions target. Governance is the relative strength, with 58% board independence and an established anti-corruption programme. The absence of a formal Human Rights Policy is a material gap under UNGP and ESRS S1. Immediate engagement priorities are Scope 1 decarbonisation pathway, climate governance formalisation, and H&S performance improvement.</div>
+      <div id="snapshot-narrative" class="snapshot-narrative"><em style="color:var(--text-muted)">Run an assessment to populate this analyst snapshot from your uploaded documents.</em></div>
     </div>
     <div class="snapshot-right">
-      <div class="snapshot-stat"><div id="snapshot-esg-risk" class="snapshot-stat-val red">High</div><div class="snapshot-stat-label">ESG Risk</div></div>
-      <div class="snapshot-stat"><div id="snapshot-disclosure" class="snapshot-stat-val amber">Medium</div><div class="snapshot-stat-label">Disclosure</div></div>
-      <div class="snapshot-stat"><div id="snapshot-coverage" class="snapshot-stat-val green">68%</div><div class="snapshot-stat-label">Data Coverage</div></div>
-      <div class="snapshot-stat"><div id="snapshot-inherent" class="snapshot-stat-val red">High</div><div class="snapshot-stat-label">Inherent Risk</div></div>
+      <div class="snapshot-stat"><div id="snapshot-esg-risk" class="snapshot-stat-val">—</div><div class="snapshot-stat-label">ESG Risk</div></div>
+      <div class="snapshot-stat"><div id="snapshot-disclosure" class="snapshot-stat-val">—</div><div class="snapshot-stat-label">Disclosure</div></div>
+      <div class="snapshot-stat"><div id="snapshot-coverage" class="snapshot-stat-val">—</div><div class="snapshot-stat-label">Data Coverage</div></div>
+      <div class="snapshot-stat"><div id="snapshot-inherent" class="snapshot-stat-val">—</div><div class="snapshot-stat-label">Inherent Risk</div></div>
     </div>
   </div>
 
@@ -1853,7 +1863,7 @@
         <button class="btn btn-ghost btn-sm" onclick="navigate('materiality')">Full Matrix →</button>
       </div>
       <div class="card-body">
-        <svg width="100%" viewBox="0 0 380 280" class="matrix-svg">
+        <svg id="dashboard-matrix-svg" width="100%" viewBox="0 0 380 280" class="matrix-svg">
           <defs>
             <marker id="arrowX" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="#8898aa" stroke-width="1.2"/></marker>
             <marker id="arrowY" markerWidth="6" markerHeight="6" refX="3" refY="0" orient="auto"><path d="M0,6 L3,0 L6,6" fill="none" stroke="#8898aa" stroke-width="1.2"/></marker>
@@ -1872,42 +1882,13 @@
           <line x1="38" y1="252" x2="38" y2="8" stroke="#8898aa" stroke-width="1.2" marker-end="url(#arrowY)"/>
           <text x="200" y="268" fill="#8898aa" font-size="10" text-anchor="middle">Impact Materiality →</text>
           <text x="16" y="130" fill="#8898aa" font-size="10" text-anchor="middle" transform="rotate(-90,16,130)">Financial Materiality →</text>
-          <!-- Dots: Double material (red) -->
-          <circle cx="295" cy="50" r="14" fill="#e53e3e" opacity=".85" style="cursor:pointer" onclick="navigate('materiality')"/>
-          <text x="295" y="55" fill="#fff" font-size="8" text-anchor="middle" font-weight="700">GHG</text>
-          <circle cx="320" cy="75" r="11" fill="#e53e3e" opacity=".85" style="cursor:pointer"/>
-          <text x="320" y="79" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Energy</text>
-          <circle cx="270" cy="85" r="10" fill="#e53e3e" opacity=".85" style="cursor:pointer"/>
-          <text x="270" y="89" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">H&amp;S</text>
-          <circle cx="340" cy="40" r="9" fill="#e53e3e" opacity=".85" style="cursor:pointer"/>
-          <text x="340" y="44" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Water</text>
-          <circle cx="255" cy="60" r="9" fill="#e53e3e" opacity=".85" style="cursor:pointer"/>
-          <text x="255" y="64" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Waste</text>
-          <circle cx="305" cy="100" r="10" fill="#e53e3e" opacity=".85" style="cursor:pointer"/>
-          <text x="305" y="104" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">HRDD</text>
-          <circle cx="280" cy="55" r="9" fill="#e53e3e" opacity=".8" style="cursor:pointer"/>
-          <text x="280" y="59" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Gov</text>
-          <!-- Financially material (blue) -->
-          <circle cx="320" cy="155" r="10" fill="#3182ce" opacity=".85" style="cursor:pointer"/>
-          <text x="320" y="159" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">CBAM</text>
-          <circle cx="290" cy="170" r="9" fill="#3182ce" opacity=".85" style="cursor:pointer"/>
-          <text x="290" y="174" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Credit</text>
-          <circle cx="345" cy="145" r="8" fill="#3182ce" opacity=".85" style="cursor:pointer"/>
-          <text x="345" y="149" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Tax</text>
-          <circle cx="310" cy="185" r="8" fill="#3182ce" opacity=".85" style="cursor:pointer"/>
-          <text x="310" y="189" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Cyber</text>
-          <!-- Impact material (green) -->
-          <circle cx="130" cy="45" r="9" fill="#38a169" opacity=".85" style="cursor:pointer"/>
-          <text x="130" y="49" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Biodiv</text>
-          <circle cx="155" cy="65" r="8" fill="#38a169" opacity=".85" style="cursor:pointer"/>
-          <text x="155" y="69" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">Comm</text>
-          <circle cx="110" cy="70" r="8" fill="#38a169" opacity=".85" style="cursor:pointer"/>
-          <text x="110" y="74" fill="#fff" font-size="7" text-anchor="middle" font-weight="700">D&amp;I</text>
+          <!-- Dots rendered dynamically from r.material_topics by renderMaterialityMatrix() -->
+          <g id="dashboard-matrix-dots"></g>
         </svg>
         <div style="display:flex;gap:12px;margin-top:6px;font-size:11.5px;flex-wrap:wrap">
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span> Double Material (7)</span>
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#3182ce;display:inline-block"></span> Financially Material (4)</span>
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span> Impact Material (3)</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span> Double Material (<span id="dash-mat-double">0</span>)</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#3182ce;display:inline-block"></span> Financially Material (<span id="dash-mat-financial">0</span>)</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span> Impact Material (<span id="dash-mat-impact">0</span>)</span>
         </div>
       </div>
     </div>
@@ -2027,13 +2008,13 @@
   <div class="card mb-20">
     <div class="card-body" style="padding:16px 20px">
       <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-        <div id="profile-company-name" style="font-size:22px;font-weight:800;letter-spacing:-.5px">VerdaSteelCo S.p.A.</div>
-        <span id="profile-sector" class="nace-chip">NACE C24 — Basic Metals</span>
-        <span id="profile-country" class="badge badge-gray">🇮🇹 Italy (HQ)</span>
-        <span id="profile-employees" class="badge badge-gray">4,800 employees</span>
-        <span id="profile-revenue" class="badge badge-gray">€1.2bn revenue</span>
-        <span id="profile-founded" class="badge badge-gray">Founded 1974</span>
-        <span id="profile-countries" class="badge badge-gray">3 countries</span>
+        <div id="profile-company-name" style="font-size:22px;font-weight:800;letter-spacing:-.5px">No company loaded</div>
+        <span id="profile-sector" class="nace-chip">Sector —</span>
+        <span id="profile-country" class="badge badge-gray" style="display:none"></span>
+        <span id="profile-employees" class="badge badge-gray" style="display:none"></span>
+        <span id="profile-revenue" class="badge badge-gray" style="display:none"></span>
+        <span id="profile-founded" class="badge badge-gray" style="display:none"></span>
+        <span id="profile-countries" class="badge badge-gray" style="display:none"></span>
       </div>
     </div>
   </div>
@@ -2155,7 +2136,7 @@
   <!-- ESG Signals -->
   <div class="card mb-20">
     <div class="card-header"><div class="card-title">ESG Signals</div><span style="font-size:11px;color:var(--text-muted);margin-left:8px">Click any signal for strategic implications</span></div>
-    <div class="card-body">
+    <div class="card-body" id="esg-signals-list">
       <div class="grid-3">
         <div>
           <div style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;font-weight:700;color:var(--green);margin-bottom:8px">✅ Positive Signals</div>
@@ -2363,384 +2344,75 @@
 
   <!-- Topic Detail Panel (expands at bottom) -->
   <div id="mat-detail-ghg" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">GHG Emissions & Climate Transition</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Double Material · Score 9.1/10 · ESRS E1 · IFRS S2 · SASB Iron & Steel</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-red">Financial: 9.3</span><span class="badge badge-red">Impact: 8.9</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Steel production is among the most carbon-intensive industrial processes globally. CBAM (fully in scope 2026) will impose direct financial penalties on Scope 1 emissions above free allocation thresholds. EU ETS Phase 4 reduces free allocations further. Carbon cost exposure estimated at €25–40m annually by 2028 at current emission levels (Python calculation required for precise figure). IFRS S2 and SASB Iron & Steel both classify GHG as financially material for NACE C24.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Sustainability Report 2023 — p.47</div><div class="evidence-text">"Scope 1 emissions of 842,000 tCO2e represent a 3% increase vs 2022, driven by higher BOF utilisation."</div><div class="evidence-confidence">Confidence: High · AI-extracted</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Direct Scope 1 emissions of 842,000 tCO2e represent a significant actual impact on the climate system. ESRS E1 classifies this as a material actual impact with high severity and breadth. The absence of a science-based target means VerdaSteelCo has no credible transition pathway, compounding forward-looking transition risk. GRI 3 requires this topic to be assessed given the company's scale and sector.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Sector Analysis — ESRS E1 §32</div><div class="evidence-text">Carbon-intensive steel operations constitute actual and potential negative impacts on climate and biodiversity systems under ESRS E1 disclosure requirements.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:95%"></div></div><span class="stakeholder-pct">95%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:98%"></div></div><span class="stakeholder-pct">98%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:88%"></div></div><span class="stakeholder-pct">88%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:70%"></div></div><span class="stakeholder-pct">70%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Suppliers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:65%"></div></div><span class="stakeholder-pct">65%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Communities</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:82%"></div></div><span class="stakeholder-pct">82%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">GHG Emissions &amp; Climate Transition</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-energy" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Energy Intensity & Efficiency</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Double Material · Score 8.7/10 · ESRS E1 · SASB Iron &amp; Steel · IFRS S2</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-red">Financial: 8.5</span><span class="badge badge-red">Impact: 8.9</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Steel is among the most energy-intensive industries globally. VerdaSteelCo's energy intensity of 3,200 MWh/€m revenue places it in the bottom quartile vs. sector peers. Rising EU energy prices and reliance on fossil-derived electricity directly compress margins. Renewable energy share of 18% lags sector leaders at 40%+. SASB Iron & Steel designates energy intensity a priority disclosure metric. Carbon pricing and CBAM make energy decarbonisation financially urgent.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Sustainability Report 2023 — p.54</div><div class="evidence-text">"Total energy consumption: 4.1 TWh in 2023. Renewable share: 18% (target: 30% by 2027)."</div><div class="evidence-confidence">Confidence: High · AI-extracted</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Fossil fuel combustion for steel production generates SO₂, NOₓ, and particulate matter — direct negative impacts on local air quality and communities near production sites in Italy and Germany. ESRS E1 mandates energy consumption and intensity reporting. The low renewable share represents a significant actual negative impact on the energy transition. GRI 302 covers energy as a universal disclosure standard applicable to all companies.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Sector Analysis — ESRS E1 §39</div><div class="evidence-text">Energy intensity and renewable transition are mandatory impact materiality disclosures for NACE C24 under ESRS E1 sector-specific guidance.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:90%"></div></div><span class="stakeholder-pct">90%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:95%"></div></div><span class="stakeholder-pct">95%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:80%"></div></div><span class="stakeholder-pct">80%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:55%"></div></div><span class="stakeholder-pct">55%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Communities</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:72%"></div></div><span class="stakeholder-pct">72%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Energy Intensity &amp; Efficiency</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-hs" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Occupational Health &amp; Safety</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Double Material · Score 8.2/10 · ESRS S1 · SASB Iron &amp; Steel · ISO 45001</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-red">Financial: 7.9</span><span class="badge badge-red">Impact: 8.5</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Steel production involves significant operational hazards — molten metal, extreme heat, heavy machinery, and confined spaces. VerdaSteelCo's LTIFR of 2.8 is above the NACE C24 EU average of 2.1. Financial impacts include regulatory fines under EU OSH Directive, compensation costs, operational disruption from incidents, and talent retention challenges. SASB Iron &amp; Steel includes H&amp;S as a priority metric. Poor safety performance also exposes the company to reputational risk with institutional investors applying ESG screens.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Sustainability Report 2023 — p.71</div><div class="evidence-text">"Lost Time Injury Frequency Rate (LTIFR): 2.8 per million hours worked. 3 recordable injuries in 2023."</div><div class="evidence-confidence">Confidence: High · AI-extracted</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Workplace injuries and fatalities represent direct, severe, and irreversible negative impacts on workers — the highest-severity category under ESRS impact materiality. ESRS S1 mandates disclosure of H&amp;S metrics including LTIFR, fatalities, and safety management systems. The above-average LTIFR suggests current controls are insufficient relative to sector peers. Worker safety is universally material under GRI 403 and constitutes a fundamental right under UNGP Principle 23.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS S1 — §88–92</div><div class="evidence-text">Health and safety of own workforce is a mandatory disclosure topic for companies with material physical risks in manufacturing per ESRS S1.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:85%"></div></div><span class="stakeholder-pct">85%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:98%"></div></div><span class="stakeholder-pct">98%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:99%"></div></div><span class="stakeholder-pct">99%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Trade Unions</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:97%"></div></div><span class="stakeholder-pct">97%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Communities</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:78%"></div></div><span class="stakeholder-pct">78%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Occupational Health &amp; Safety</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-hrdd" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Human Rights Due Diligence</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Double Material · Score 7.8/10 · ESRS S1–S4 · UNGP · OECD Guidelines · CSDDD</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-amber">Financial: 7.4</span><span class="badge badge-red">Impact: 8.2</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">The EU Corporate Sustainability Due Diligence Directive (CSDDD) will mandate formal HRDD processes for companies of VerdaSteelCo's scale from 2026, with enforcement fines of up to 5% of global turnover for non-compliance. Supply chains spanning Brazil, India, and Turkey expose the company to geographies with elevated forced labour and child labour risk indices. Failure to establish HRDD exposes the company to litigation, customer sanctions, and loss of EU procurement eligibility.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Full document review — all uploads</div><div class="evidence-text">No standalone Human Rights Policy identified in AR2023, SR2023, or any other uploaded document.</div><div class="evidence-confidence">Confidence: High · Gap finding</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Iron ore sourcing from Brazil and scrap procurement from Turkey and India involves geographies with documented risks of modern slavery, child labour in informal waste sectors, and inadequate labour protections. ESRS S2 requires companies to assess and disclose material impacts on workers in the value chain. The absence of a Human Rights Policy represents a structural gap in the company's ability to prevent, mitigate, and remediate adverse human rights impacts per UNGP Principles 15–24.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Sector Analysis — UNGP / ESRS S2</div><div class="evidence-text">NACE C24 upstream supply chains consistently rank in top-5 sectors for forced labour exposure risk per Global Slavery Index sector analysis.</div><div class="evidence-confidence">Confidence: Medium · Sector inference</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:82%"></div></div><span class="stakeholder-pct">82%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:92%"></div></div><span class="stakeholder-pct">92%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">NGOs/Civil Society</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:95%"></div></div><span class="stakeholder-pct">95%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:75%"></div></div><span class="stakeholder-pct">75%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Suppliers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:70%"></div></div><span class="stakeholder-pct">70%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Human Rights Due Diligence</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <!-- NEW DETAIL PANELS -->
 
   <div id="mat-detail-water" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Water Management</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Double Material · Score 7.5/10 · ESRS E3 · SASB Iron &amp; Steel · CDP Water</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-amber">Financial: 7.2</span><span class="badge badge-amber">Impact: 7.8</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Steel production uses approximately 10–15m³ of water per tonne of steel. VerdaSteelCo's Spanish operations are located in a water-stressed basin (Ebro River Basin, classified as water-scarce under EU WFD). Water scarcity risks include regulatory withdrawal restrictions, rising abstraction costs, and potential operational shutdowns during drought years. EU Water Framework Directive compliance audits are increasing in frequency. CDP Water questionnaire response is expected by major institutional investors.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Sustainability Report 2023 — p.62</div><div class="evidence-text">"Total water withdrawal: 6.2 million m³. Recycling rate: 68%. Spain site identified as operating in water-stressed region."</div><div class="evidence-confidence">Confidence: High · AI-extracted</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">High-volume water abstraction from stressed basins reduces availability for local communities, agriculture, and ecosystems — constituting both actual and potential negative impacts under ESRS E3. Steel plants discharge process water with thermal and chemical loads that affect downstream ecosystems. ESRS E3 mandates disclosure of water withdrawal, consumption, and recycling by water-stressed location. GRI 303 covers water and effluents as sector-relevant universal disclosures for NACE C24.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Sector Analysis — ESRS E3 §26</div><div class="evidence-text">Iron &amp; steel manufacturing in Mediterranean regions is classified as a high water-stress sector under ESRS E3 location-based screening criteria.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:90%"></div></div><span class="stakeholder-pct">90%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:78%"></div></div><span class="stakeholder-pct">78%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Communities</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:88%"></div></div><span class="stakeholder-pct">88%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">NGOs</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:82%"></div></div><span class="stakeholder-pct">82%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:65%"></div></div><span class="stakeholder-pct">65%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Water Management</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-cbam" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">CBAM &amp; Carbon Tax Exposure</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Financially Material · Score 7.1/10 · EU CBAM Regulation · EU ETS Phase 4 · IFRS S2</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-amber">Financial: 7.1</span><span class="badge badge-green">Impact: 3.2</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">The EU Carbon Border Adjustment Mechanism (CBAM) entered its transitional phase in October 2023 and will be fully operational by 2026. Steel is an in-scope sector. CBAM will impose a carbon price on steel imports equivalent to EU ETS carbon costs — directly affecting VerdaSteelCo's competitive position vs. non-EU peers. EU ETS Phase 4 progressively eliminates free carbon allocations to steel producers through 2030. Combined CBAM + ETS exposure estimated at €25–40m annually by 2028 at current emission levels.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">EU CBAM Regulation (EU) 2023/956</div><div class="evidence-text">Iron and steel (CN codes 72 and 7301–7302) are within scope of CBAM. Declarant obligations apply from 2026.</div><div class="evidence-confidence">Confidence: High · Regulatory source</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">CBAM is primarily a financial compliance topic rather than a direct impact driver — it does not generate new environmental or social impacts. The indirect effect is that carbon pricing incentivises decarbonisation investment, which carries positive impact implications. Not classified as impact material under ESRS E1 framework, but requires IFRS S2 disclosure as a transition risk. Classified as financially material only under the double materiality framework.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">IFRS S2 — §10(b)</div><div class="evidence-text">Carbon pricing mechanisms including ETS and border adjustments are classified as policy and legal transition risks requiring quantitative disclosure under IFRS S2.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:95%"></div></div><span class="stakeholder-pct">95%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:98%"></div></div><span class="stakeholder-pct">98%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:72%"></div></div><span class="stakeholder-pct">72%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Suppliers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:60%"></div></div><span class="stakeholder-pct">60%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:45%"></div></div><span class="stakeholder-pct">45%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">CBAM &amp; Carbon Tax Exposure</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-gov" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">ESG Governance &amp; Board Oversight</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Double Material · Score 6.8/10 · ESRS G1 · GRI 2 · TCFD Governance</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-amber">Financial: 6.5</span><span class="badge badge-amber">Impact: 7.1</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Concentrated ownership (Fondazione Verda 41% + PE 28%) creates governance risk around minority shareholder protection and management entrenchment. Board ESG committee established 2022 is positive but lacks disclosed targets and KPI accountability structure. TCFD Governance pillar requires disclosure of board oversight and management role in climate-related risks and opportunities. Weak ESG governance is a red flag for institutional investors applying SFDR Article 8/9 screens. Governance failures amplify all other E and S material topic risks.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Annual Report 2023 — p.31</div><div class="evidence-text">"Board ESG Committee established Q3 2022. Meets quarterly. Comprises 3 independent directors and CFO."</div><div class="evidence-confidence">Confidence: High · AI-extracted</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Governance quality directly determines the speed and ambition with which the company addresses its material E and S impacts. A board without ESG accountability structures is less likely to prioritise decarbonisation, H&amp;S improvements, or supply chain HRDD — amplifying negative impacts on climate, workers, and communities. ESRS G1 mandates disclosure of corporate culture, political engagements, and whistleblower protections as impact channels. Board diversity (gender, independence) affects the breadth of perspectives brought to risk management.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS G1 — §4</div><div class="evidence-text">Business conduct, corporate governance, and the role of administrative bodies in sustainability oversight are material impact topics under ESRS G1.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:92%"></div></div><span class="stakeholder-pct">92%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:88%"></div></div><span class="stakeholder-pct">88%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:60%"></div></div><span class="stakeholder-pct">60%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:65%"></div></div><span class="stakeholder-pct">65%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">NGOs</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:70%"></div></div><span class="stakeholder-pct">70%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">ESG Governance &amp; Board Oversight</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-waste" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Waste &amp; Hazardous Materials Management</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Double Material · Score 6.5/10 · ESRS E5 · SASB Iron &amp; Steel · GRI 306</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-amber">Financial: 6.0</span><span class="badge badge-amber">Impact: 7.0</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Steel production generates significant solid waste streams: blast furnace slag, electric arc furnace dust (a listed hazardous waste under EU Directive 2008/98/EC), mill scale, and spent refractory materials. EAF dust contains zinc, lead, and cadmium — classification as hazardous waste attracts higher disposal costs and regulatory obligations. EU Waste Framework Directive amendments increase mandatory recycling targets. Future Extended Producer Responsibility regimes may impose additional costs. Circular economy transition creates opportunities in slag valorisation.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Sustainability Report 2023 — p.65</div><div class="evidence-text">"Total solid waste generated: 142,000 tonnes. EAF dust: 4,200 tonnes (classified hazardous). Slag recycling rate: 81%."</div><div class="evidence-confidence">Confidence: High · AI-extracted</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Hazardous waste from steel production — particularly EAF dust containing heavy metals — poses risks of soil and groundwater contamination if not properly managed. ESRS E5 covers resource use and circular economy, requiring disclosure of waste generation, treatment, and circularity metrics. GRI 306 requires disclosure of waste by type and disposal method. Communities near disposal sites may face exposure to pollutants. The trend is improving (decreasing: ▼) reflecting operational improvements, but absolute volumes remain material.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS E5 — §30</div><div class="evidence-text">Waste generation and management including hazardous waste are designated as material impact topics for NACE C24 under ESRS E5 sector analysis.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:92%"></div></div><span class="stakeholder-pct">92%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Communities</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:85%"></div></div><span class="stakeholder-pct">85%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:72%"></div></div><span class="stakeholder-pct">72%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">NGOs</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:78%"></div></div><span class="stakeholder-pct">78%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:60%"></div></div><span class="stakeholder-pct">60%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Waste &amp; Hazardous Materials Management</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-biodiv" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Biodiversity &amp; Ecosystem Impact</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Impact Material · Score 5.2/10 · ESRS E4 · TNFD · GRI 304</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-green">Financial: 3.8</span><span class="badge badge-amber">Impact: 6.6</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Biodiversity is primarily an impact material topic for VerdaSteelCo — financial materiality is lower but growing. Future regulatory risk from the EU Nature Restoration Law (2024) and Biodiversity Strategy 2030 may restrict operations near sensitive habitats. Upstream iron ore supply chains (Brazil/Australia) face increasing regulatory scrutiny on biodiversity impacts in mining concessions. The TNFD framework is gaining traction with investors. Biodiversity loss is financially material if site permissions for expansion are denied or operational licences are conditioned on habitat assessments.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Sector Analysis — ESRS E4</div><div class="evidence-text">NACE C24 companies with sites adjacent to Natura 2000 areas or sourcing from high-biodiversity-value regions face material ESRS E4 disclosure obligations.</div><div class="evidence-confidence">Confidence: Medium · Sector inference</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Steel production generates air and water pollution that degrades terrestrial and aquatic ecosystems in the vicinity of production sites. Upstream iron ore mining — even indirectly through the supply chain — is one of the most biodiversity-impactful activities globally. ESRS E4 requires companies to assess biodiversity and ecosystem impacts and dependencies. Under the LEAP approach (Locate, Evaluate, Assess, Prepare), all three VerdaSteelCo production sites and supply chain origins require screening against biodiversity sensitivity data.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS E4 — §16 (LEAP approach)</div><div class="evidence-text">Companies with operations in or near biodiversity-sensitive areas must complete a LEAP assessment and disclose material dependencies and impacts on ecosystems per ESRS E4.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">NGOs/Civil Society</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:90%"></div></div><span class="stakeholder-pct">90%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:80%"></div></div><span class="stakeholder-pct">80%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:62%"></div></div><span class="stakeholder-pct">62%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Communities</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:72%"></div></div><span class="stakeholder-pct">72%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:45%"></div></div><span class="stakeholder-pct">45%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Biodiversity &amp; Ecosystem Impact</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-cyber" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Cybersecurity &amp; Digital Resilience</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Financially Material · Score 4.8/10 · EU NIS2 Directive · ESRS G1 · TCFD Technology Risk</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-green">Financial: 4.8</span><span class="badge badge-green">Impact: 2.5</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Industrial manufacturers with OT (Operational Technology) systems are increasingly targeted by ransomware and state-sponsored cyber attacks. A successful attack on VerdaSteelCo's industrial control systems could cause production shutdowns estimated at €2–8m per day. The EU NIS2 Directive (effective October 2024) classifies steel manufacturers as "important entities" subject to mandatory incident reporting and security obligations. Cyber insurance premiums for manufacturers have increased 35–50% since 2021. Digital transformation (IoT, Industry 4.0) increases attack surface.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">EU NIS2 Directive 2022/2555</div><div class="evidence-text">Manufacturing sector entities meeting size thresholds are classified as "important" under NIS2, requiring security risk management measures and incident notification within 24 hours.</div><div class="evidence-confidence">Confidence: High · Regulatory source</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Cybersecurity is primarily a financial risk topic rather than an impact materiality issue under ESRS — the direct negative impacts on people and environment are limited unless an attack causes industrial accidents or data breaches affecting employees. Cyber incidents could expose employee personal data (GDPR implications) and indirectly cause production disruptions that affect workforce. Not currently classified as impact material under double materiality assessment for this company profile, but escalation risk exists if OT and IT systems converge further.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Assessment — ESRS G1 / TCFD</div><div class="evidence-text">Cybersecurity is classified as a technology transition risk under TCFD and a governance disclosure topic under ESRS G1 for digital-dependent industrial manufacturers.</div><div class="evidence-confidence">Confidence: Medium · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:78%"></div></div><span class="stakeholder-pct">78%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:85%"></div></div><span class="stakeholder-pct">85%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:70%"></div></div><span class="stakeholder-pct">70%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:55%"></div></div><span class="stakeholder-pct">55%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Suppliers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:60%"></div></div><span class="stakeholder-pct">60%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Cybersecurity &amp; Digital Resilience</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-credit" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Credit &amp; Financial Risk from ESG</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Financially Material · Score 5.5/10 · IFRS S1 · ECB Climate-Related Financial Risk · Basel IV</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-amber">Financial: 5.5</span><span class="badge badge-green">Impact: 2.0</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">ESG risk is increasingly reflected in credit ratings and lending conditions. Major credit rating agencies (Moody's, S&P, Fitch) now integrate ESG risk scores into issuer ratings. A high ESG risk profile can increase VerdaSteelCo's cost of debt — particularly relevant given EU Taxonomy non-alignment (steel sector not eligible for green activities per current criteria). ECB supervisory expectations require banks to integrate climate risk into credit risk assessments (ECB Guide on Climate and Environmental Risks 2020). High ESG risk may limit access to sustainability-linked bonds at competitive rates.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Assessment — IFRS S1 / ECB Framework</div><div class="evidence-text">ESG-related financial risks including credit market access constraints are classified as transition risks requiring quantification under IFRS S1 §10(b).</div><div class="evidence-confidence">Confidence: Medium · Sector inference</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Credit and financial risk from ESG is a company-level financial topic with limited direct impact on external stakeholders or the environment. Not classified as impact material under double materiality assessment. The indirect effect is that restricted access to capital may constrain the company's ability to invest in decarbonisation and social improvements — creating downstream impact risk. Classified as financially material only, consistent with ESRS treatment of financial performance topics that lack direct environmental or social impact channels.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS 1 — §29 (Double Materiality)</div><div class="evidence-text">A topic is impact material if it involves actual or potential significant impacts on people or the environment. Financial risk from ESG does not meet this threshold unless it leads to operational impacts with external consequences.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:92%"></div></div><span class="stakeholder-pct">92%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Lenders/Banks</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:95%"></div></div><span class="stakeholder-pct">95%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:75%"></div></div><span class="stakeholder-pct">75%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Customers</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:50%"></div></div><span class="stakeholder-pct">50%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:40%"></div></div><span class="stakeholder-pct">40%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Credit &amp; Financial Risk from ESG</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-tax" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Tax Transparency &amp; Governance</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Financially Material · Score 4.2/10 · ESRS G1 · GRI 207 · OECD BEPS Pillar 2</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-green">Financial: 4.2</span><span class="badge badge-green">Impact: 3.5</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">OECD BEPS Pillar 2 global minimum tax (15% effective rate, applicable from 2024) may affect VerdaSteelCo's tax optimization structures across Italy, Germany, and Spain. EU Public Country-by-Country Reporting Directive (2023) requires disclosure of tax paid by jurisdiction for large companies — increasing scrutiny of effective tax rates. GRI 207 requires disclosure of tax governance approach, effective tax rate, and significant jurisdictional differences. Aggressive tax planning is increasingly a material risk under ESG governance assessments.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Assessment — ESRS G1 §22</div><div class="evidence-text">Tax transparency, country-by-country reporting, and compliance with OECD BEPS frameworks are business conduct topics within the scope of ESRS G1 disclosure obligations.</div><div class="evidence-confidence">Confidence: Medium · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Tax avoidance reduces public revenue in the jurisdictions where VerdaSteelCo operates — constituting a potential negative impact on society (ESRS G1 business conduct framing). GRI 207 explicitly frames tax as a societal contribution topic. Responsible tax practice contributes to public services in local communities. The impact materiality score is relatively lower because VerdaSteelCo has no documented evidence of aggressive tax structures — this assessment is based on inherent risk from multi-jurisdiction operations rather than observed practice.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS G1 — §6 (Business Conduct)</div><div class="evidence-text">Tax governance and compliance with tax laws and regulations in the jurisdictions of operation are within the scope of ESRS G1 business conduct disclosures.</div><div class="evidence-confidence">Confidence: Medium · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:80%"></div></div><span class="stakeholder-pct">80%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:88%"></div></div><span class="stakeholder-pct">88%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Civil Society</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:75%"></div></div><span class="stakeholder-pct">75%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Media</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:65%"></div></div><span class="stakeholder-pct">65%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:42%"></div></div><span class="stakeholder-pct">42%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Tax Transparency &amp; Governance</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-comm" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Community Relations &amp; Social Licence</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Impact Material · Score 4.5/10 · ESRS S3 · GRI 413 · UNGP</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-green">Financial: 3.2</span><span class="badge badge-green">Impact: 5.8</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Community opposition to industrial operations can affect permitting, operational licences, and expansion approvals — creating financial risk through delays or restrictions. Steel plants are significant employers in local economies (Italy, Germany, Spain), creating a degree of mutual dependency. However, financial materiality is assessed as lower for VerdaSteelCo because no significant community opposition or social licence conflicts have been identified in uploaded documents. Community engagement quality affects employer brand and recruitment in tight EU labour markets.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">Sustainability Report 2023 — p.81</div><div class="evidence-text">"Community investment: €1.2m in 2023. Stakeholder engagement panels conducted at all 3 sites. No material community grievances recorded."</div><div class="evidence-confidence">Confidence: Medium · AI-extracted</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Steel production creates significant local impacts: noise, air quality, traffic, and visual intrusion on communities surrounding production sites. ESRS S3 requires disclosure of impacts on affected communities, including assessment of the company's approach to free, prior, and informed consent where applicable. Local employment and regional economic development represent positive contributions. GRI 413 covers community engagement and local development as sector-relevant disclosures for industrial manufacturers.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS S3 — §7 (Affected Communities)</div><div class="evidence-text">Impacts on communities in proximity to industrial operations are a mandatory assessment topic under ESRS S3 for NACE C24 companies with physical manufacturing sites.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Communities</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:95%"></div></div><span class="stakeholder-pct">95%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">NGOs/Civil Society</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:85%"></div></div><span class="stakeholder-pct">85%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:70%"></div></div><span class="stakeholder-pct">70%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:72%"></div></div><span class="stakeholder-pct">72%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:55%"></div></div><span class="stakeholder-pct">55%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Community Relations &amp; Social Licence</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
   <div id="mat-detail-di" class="detail-expand">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div><div style="font-size:17px;font-weight:800">Diversity, Equity &amp; Inclusion</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Impact Material · Score 4.2/10 · ESRS S1 · GRI 405 · EU Gender Equality Directives</div></div>
-      <div style="display:flex;gap:8px"><span class="badge badge-green">Financial: 3.8</span><span class="badge badge-green">Impact: 4.6</span></div>
-    </div>
-    <div class="grid-3" style="gap:16px">
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Financial Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">The EU Pay Transparency Directive (applicable from 2026) mandates disclosure of gender pay gaps and requires remediation where gaps exceed 5%. Steel is historically a male-dominated industry — significant pay gap exposure exists. Talent scarcity in the EU manufacturing sector means D&amp;I performance affects ability to attract and retain skilled workers. Companies with strong D&amp;I track records show improved innovation metrics and lower attrition. EU whistleblower protection legislation and anti-discrimination obligations create compliance risk for companies with weak D&amp;I programmes.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">AI Sector Analysis — ESRS S1 / EU Pay Transparency</div><div class="evidence-text">Gender pay gap reporting and equitable treatment of workforce are mandatory ESRS S1 disclosures. EU Pay Transparency Directive applies from 2026 to companies with 100+ employees.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Impact Materiality Rationale</div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">Discrimination, pay inequality, and lack of inclusion represent direct negative impacts on workers per ESRS S1. Steel industry demographics (predominantly male, low diversity at senior levels) reflect structural inequalities that perpetuate social disadvantage. ESRS S1 requires disclosure of gender pay gap, diversity metrics, and measures taken to ensure equal treatment. GRI 405 covers diversity of governance bodies and employees as a universal standard. Impact materiality is moderate given no documented discrimination incidents but inherent sector risk from historical underrepresentation.</div>
-        <div class="evidence-item" style="margin-top:8px"><div class="evidence-source">ESRS S1 — §88 (Diversity &amp; Inclusion)</div><div class="evidence-text">Equal treatment, non-discrimination, and gender diversity in workforce and governance are mandatory disclosure topics under ESRS S1 for all companies above size thresholds.</div><div class="evidence-confidence">Confidence: High · Framework-based</div></div>
-      </div>
-      <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Stakeholder Relevance</div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Employees</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:90%"></div></div><span class="stakeholder-pct">90%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Investors</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:75%"></div></div><span class="stakeholder-pct">75%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Regulators</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:82%"></div></div><span class="stakeholder-pct">82%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">NGOs/Civil Society</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:78%"></div></div><span class="stakeholder-pct">78%</span></div>
-        <div class="stakeholder-bar-row"><span class="stakeholder-name">Trade Unions</span><div class="stakeholder-track"><div class="stakeholder-fill" style="width:85%"></div></div><span class="stakeholder-pct">85%</span></div>
-      </div>
-    </div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Diversity, Equity &amp; Inclusion</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6"><em style="color:var(--text-muted)">Run an assessment to populate this topic's materiality rationale, evidence and stakeholder relevance from your uploaded documents.</em></div>
   </div>
 
 </div>
@@ -3229,10 +2901,8 @@ function resetMaterialityFilters() {
     <div class="card">
       <div class="card-header"><div class="card-title">Data Completeness by Pillar</div></div>
       <div class="card-body">
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">Environmental</span><span style="font-size:13px;font-weight:700;color:var(--amber-mid)">72%</span></div><div class="gauge-track" style="height:10px"><div class="gauge-fill gauge-fill-amber" style="width:72%"></div></div><div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">Scope 1,2 available · Scope 3 partial · Energy by source missing</div></div>
-          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">Social</span><span style="font-size:13px;font-weight:700;color:var(--amber-mid)">64%</span></div><div class="gauge-track" style="height:10px"><div class="gauge-fill gauge-fill-amber" style="width:64%"></div></div><div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">LTIFR available · TRIR missing · HR Policy absent</div></div>
-          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">Governance</span><span style="font-size:13px;font-weight:700;color:var(--green-mid)">78%</span></div><div class="gauge-track" style="height:10px"><div class="gauge-fill gauge-fill-green" style="width:78%"></div></div><div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">Board data available · Whistleblower policy missing</div></div>
+        <div id="data-completeness-pillars" style="display:flex;flex-direction:column;gap:16px">
+          <div style="font-size:12.5px;color:var(--text-muted);font-style:italic">Run an assessment to see data completeness derived from the documents/sources provided.</div>
         </div>
       </div>
     </div>
@@ -3263,7 +2933,7 @@ function resetMaterialityFilters() {
         <div style="flex:1;max-width:300px">
           <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:4px">Score vs Industry Benchmark</div>
           <div class="gauge-track" style="height:10px"><div id="env-score-gauge" class="gauge-fill gauge-fill-red" style="width:32%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:3px"><span id="env-score-label">VerdaSteelCo: 32</span><span>Sector avg: 51</span><span>Top decile: 78</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:3px"><span id="env-score-label">Company: —</span><span>Sector avg: 51</span><span>Top decile: 78</span></div>
         </div>
       </div>
     </div>
@@ -3322,79 +2992,7 @@ function resetMaterialityFilters() {
 
       <!-- Risk detail expands (static demo — hidden when live data loads) -->
       <div id="env-static-expands">
-      <div id="env-risk-1" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">GHG Emissions & Climate Transition</div><div style="font-size:12px;color:var(--text-muted)">Severity: Critical · ESRS E1 · IFRS S2 · TCFD</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('env-risk-1').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--red-mid)">82</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">58</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--red-mid)">P12</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Critical):</strong> Severity driven by: (1) Sector exposure — NACE C24 is among the highest-emission industrial sectors per ESRS E1 sector guidance; (2) Quantitative performance — Scope 1 of 842,000 tCO2e places company in bottom decile vs peers (P12); emissions intensity 1,265 tCO2e/€m vs sector median 890; (3) Policy maturity — rated Basic (Level 2): general emissions reduction ambition stated in SR2023 but no science-based target, no decarbonisation pathway, no interim milestones; (4) Missing data — Scope 3 only partially reported (categories 1 and 11 disclosed, remainder absent); (5) Regulatory pressure — CBAM fully in scope 2026, EU ETS Phase 4 tightening.</div>
-        <div class="evidence-item"><div class="evidence-source">Sustainability Report 2023 — p.47</div><div class="evidence-text">"Our 2023 Scope 1 emissions reached 842,000 tCO2e, a 3% increase from 2022 levels."</div><div class="evidence-confidence">Method: AI extraction · Confidence: High</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Commission a Science-Based Targets initiative (SBTi) pathway assessment within 6 months. Engage specialist climate consultants to develop a 2030/2035 decarbonisation roadmap aligned with 1.5°C scenario for NACE C24.</span></div>
-      </div>
-
-      <div id="env-risk-2" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Energy Intensity & Efficiency</div><div style="font-size:12px;color:var(--text-muted)">Severity: High · ESRS E1 · SASB IF-ST-130a · EU Energy Efficiency Directive</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('env-risk-2').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--red-mid)">74</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">52</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--red-mid)">P22</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (High):</strong> Energy intensity of 3,200 MWh/€m revenue is 28% above the NACE C24 sector median of 2,490 MWh/€m — placing VerdaSteelCo at the P22 percentile (worse than 78% of peers). Renewable energy share of 18% significantly underperforms the sector top quartile of 40%+. Three compounding risk drivers: (1) No ISO 50001 energy management certification — the primary indicator of structured energy reduction; (2) No published energy efficiency targets or trajectory, meaning ESRS E1-4 disclosure requirements cannot be met; (3) EU Energy Efficiency Directive (recast 2023/1791) imposes mandatory energy audits for large enterprises annually — non-compliance risk identified. Financial exposure: each 1% energy efficiency improvement = ~€1.2M annual saving at current Italian industrial electricity prices (~€0.12/kWh).</div>
-        <div class="evidence-item"><div class="evidence-source">Sustainability Report 2023 — p.52</div><div class="evidence-text">"Total energy consumption reached 3,840 GWh in 2023. Renewable energy accounted for 18% of total consumption, up from 15% in 2022."</div><div class="evidence-confidence">Method: AI extraction · Confidence: High · Python calc: 3,840 GWh / €1.2bn rev = 3,200 MWh/€m</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Pursue ISO 50001 certification within 12 months across all production sites. Simultaneously, procure a 200–300 MW Power Purchase Agreement (PPA) for renewable electricity from the Italian/Spanish grid — this single action would raise renewable share above 40% and reduce Scope 2 by ~70%, improving P22 → P55+ percentile ranking.</span></div>
-      </div>
-
-      <div id="env-risk-3" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Water Withdrawal & Discharge</div><div style="font-size:12px;color:var(--text-muted)">Severity: Medium · ESRS E3 · GRI 303 · EU Water Framework Directive</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('env-risk-3').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">61</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">48</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">P35</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Medium):</strong> Total water withdrawal of 4.2 million m³ translates to an intensity of 3,500 m³/€m revenue vs. the NACE C24 sector median of 2,900 m³/€m — 21% above median (P35). Three material risk drivers compound the absolute volume: (1) Physical climate risk — Spanish operations (Bilbao facility, ~18% of production capacity) face WRI Aqueduct "High" water stress classification under RCP 4.5 and 8.5 scenarios by 2040; (2) Disclosure gaps — water discharge quality (temperature, pH, suspended solids) not separately reported, creating a direct ESRS E3-4 compliance gap; (3) No water reduction targets published despite ESRS E3-5 target-setting requirements for material water topics. WBCSD WASH Pledge alignment not achieved. ESRS E3 full compliance will require site-level water accounting, stress-based risk scoring, and targets by FY2025 report.</div>
-        <div class="evidence-item"><div class="evidence-source">Sustainability Report 2023 — p.58</div><div class="evidence-text">"Water withdrawal from municipal supplies and surface water totalled 4.2 million m³ across all three production sites. Water management procedures are in place at all sites."</div><div class="evidence-confidence">Method: AI extraction · Confidence: High · WRI Aqueduct: Spain site = High stress zone</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Commission a site-level water risk assessment at the Bilbao facility using WRI Aqueduct 4.0 methodology. Set a quantitative 2030 water intensity reduction target of ≥20% (peer median), and disclose water discharge quality parameters to close the ESRS E3-4 gap — required for FY2025 CSRD report.</span></div>
-      </div>
-
-      <div id="env-risk-4" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Waste Management & Hazardous Materials</div><div style="font-size:12px;color:var(--text-muted)">Severity: Medium · ESRS E2/E5 · GRI 306 · IED Directive</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('env-risk-4').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">55</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">51</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">P44</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Medium):</strong> The 71% waste recycling rate (134,000t / 189,000t) represents a positive relative signal — above the NACE C24 sector average of 58% (P72 on recycling rate alone). However, the overall risk score of 55 reflects three material gaps that temper the positive headline: (1) Hazardous waste (acids, oils, chrome-bearing dusts) are not separately quantified or disclosed — ESRS E2 (Pollution) requires disclosure of hazardous substances separately from non-hazardous; (2) Steel slag classification under EU Waste Framework Directive (2008/98/EC) has been litigated in Italy — Brescia facility may face permit review if slag reclassified; (3) Established-level maturity means solid systems exist but no circular economy targets are published for ESRS E5 disclosure compliance. Risk trend: Deteriorating — proposed revisions to EU Industrial Emissions Directive (IED2) tighten BAT reference documents for iron and steel, likely increasing compliance capex by 2026.</div>
-        <div class="evidence-item"><div class="evidence-source">Sustainability Report 2023 — p.61</div><div class="evidence-text">"Total waste generated: 189,000 tonnes. Recycling/recovery rate: 71% (134,190t). Steel slag and by-products recovered through certified processors."</div><div class="evidence-confidence">Method: AI extraction · Confidence: High · Hazardous waste breakdown: not found</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Disclose hazardous waste by category (GRI 306-3) in the FY2024 sustainability report to close the ESRS E2 gap. Set a 2030 target to achieve ≥85% circular recovery rate (top quartile for NACE C24). Commission a legal review of steel slag classification status under Italian transposition of the EU Waste Framework Directive.</span></div>
-      </div>
-      <div id="env-risk-5" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Environmental Compliance</div><div style="font-size:12px;color:var(--text-muted)">Severity: Low · ESRS E1–E5 · IED Permit · ISO 14001 · REACH/RoHS</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('env-risk-5').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--green-mid)">44</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">49</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--green-mid)">P68</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Low):</strong> Environmental compliance posture is the strongest risk area across the Environmental pillar — risk score 44 (P68, better than 68% of NACE C24 peers). ISO 14001 certification at all 3 production sites provides an audited foundation for compliance management. No material environmental fines, penalty notices, or regulatory violations found across all uploaded documents. IED (Industrial Emissions Directive) permit compliance is confirmed in AR2023. Three residual risk considerations prevent a lower score: (1) IED2 revision (expected 2025–2026) will tighten Best Available Technique (BAT) conclusions for the iron and steel sector — Brescia BF-BOF facility may face a €15–30M environmental upgrade requirement; (2) REACH substance authorisations for chrome-VI compounds used in steel finishing are under active review by ECHA — supply chain substitution cost risk; (3) Italian Autorizzazione Integrata Ambientale (AIA) permit renewal for the Brescia site due 2026 — potential tightening of SO₂ and NOₓ emission limits.</div>
-        <div class="evidence-item"><div class="evidence-source">Annual Report 2023 — p.44 / Sustainability Report 2023 — p.31</div><div class="evidence-text">"ISO 14001 certification maintained at all production facilities. No significant environmental incidents or regulatory fines recorded in 2023."</div><div class="evidence-confidence">Method: AI extraction · Confidence: High · IED permit: confirmed compliant</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Proactively engage with Italian ISPRA and EU Commission on IED2 timeline and BAT conclusions for iron & steel. Pre-commission an independent environmental compliance audit at the Brescia BF-BOF site (2024) to identify any gap vs. future BAT standards and build a pre-emptive compliance investment case.</span></div>
-      </div>
+        <div class="detail-expand"><em style="color:var(--text-muted)">Run an assessment to populate environmental risk detail, severity assessments, evidence and recommendations from your uploaded documents.</em></div>
       </div><!-- /env-static-expands -->
     </div>
 
@@ -3444,7 +3042,7 @@ function resetMaterialityFilters() {
         <div class="card">
           <div class="card-header"><div class="card-title">AI Qualitative Assessment</div></div>
           <div class="card-body">
-            <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.7">VerdaSteelCo demonstrates a bifurcated environmental maturity profile. Operational environmental management (ISO 14001, waste management, compliance) is at Established level and represents genuine progress. However, <strong>strategic climate management is at Basic level</strong> — the most critical gap for a carbon-intensive NACE C24 manufacturer. The absence of any science-based target, interim decarbonisation milestone, or formal net-zero commitment is inconsistent with the company's regulatory exposure and peer expectations. The 3% increase in Scope 1 emissions in 2023 suggests no active decarbonisation programme is underway. <span style="color:var(--red-mid);font-weight:600">This is the single highest-priority environmental finding.</span></div>
+            <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.7"><em style="color:var(--text-muted)">Run an assessment to generate the AI qualitative assessment of the company's environmental maturity from your uploaded documents.</em></div>
           </div>
         </div>
       </div>
@@ -3509,7 +3107,7 @@ function resetMaterialityFilters() {
         <div style="width:1px;height:40px;background:var(--border)"></div>
         <div style="flex:1;max-width:300px">
           <div class="gauge-track" style="height:10px"><div id="soc-score-gauge" class="gauge-fill gauge-fill-amber" style="width:48%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:3px"><span id="soc-score-label">VerdaSteelCo: 48</span><span>Sector avg: 52</span><span>Top decile: 81</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:3px"><span id="soc-score-label">Company: —</span><span>Sector avg: 52</span><span>Top decile: 81</span></div>
         </div>
       </div>
     </div>
@@ -3565,49 +3163,7 @@ function resetMaterialityFilters() {
 
       <!-- Static demo expands (hidden when live data loads) -->
       <div id="soc-static-expands">
-      <div id="soc-risk-1" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Occupational Health & Safety</div><div style="font-size:12px;color:var(--text-muted)">Severity: High · ESRS S1 · GRI 403 · SASB IF-ST-320a</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('soc-risk-1').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:10px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">2.8</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">LTIFR (per M hrs)</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">2.1</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">P38</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (High):</strong> LTIFR of 2.8 is 33% above sector average, representing real harm to workers. Policy maturity is Developing (Level 3) — H&S policy in place with contractor management inclusion, but root cause analysis documentation and systematic near-miss reporting are absent from disclosures. Positive signal: 2023 LTIFR improved from 3.4 in 2022, indicating active management response. However, absolute level remains above acceptable benchmark. ESRS S1 requires material H&S topics be disclosed with KPIs, targets, and incident breakdown by type.</div>
-        <div class="evidence-item"><div class="evidence-source">Sustainability Report 2023 — p.71</div><div class="evidence-text">"LTIFR improved to 2.8 (2022: 3.4). 34 lost time incidents recorded across all sites. Hours worked: 12.1 million."</div><div class="evidence-confidence">Confidence: High · Quantitative extraction</div></div>
-      </div>
-
-      <div id="soc-risk-2" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Human Rights Due Diligence</div><div style="font-size:12px;color:var(--text-muted)">Severity: Medium → High · ESRS S2/S3 · UNGP · OECD Guidelines · CSDDD</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('soc-risk-2').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">52</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">38</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">P28</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Medium → High):</strong> <span style="color:var(--red-mid);font-weight:600">No standalone Human Rights Policy identified in any uploaded document.</span> This constitutes a Level 1 (Absent) maturity — the most critical finding in the Social pillar. Four factors drive the elevated risk score above sector average: (1) Absent UNGP-aligned HRDD framework — CSDDD (EU Corporate Sustainability Due Diligence Directive) requires formal HRDD processes for companies of VerdaSteelCo's scale from 2027, with civil liability provisions; (2) High-risk supply chain geography — iron ore from Brazil (tailings dam risk, Mariana/Brumadinho precedent), scrap from Turkey (documented labour rights concerns in steel sector), India and Eastern Europe; (3) No grievance mechanism documented that meets UNGP Principle 31 effectiveness criteria; (4) ESRS S2 (Workers in the value chain) and S3 (Affected communities) require substantive disclosure — current position creates a material CSRD reporting gap.</div>
-        <div class="evidence-item" style="border-left-color:var(--red-mid)"><div class="evidence-source">Full Document Review — All uploaded documents</div><div class="evidence-text">No document named "Human Rights Policy" or containing equivalent commitments identified. Supplier Code of Conduct references labour standards but does not constitute UNGP-aligned due diligence.</div><div class="evidence-confidence">Confidence: High · Gap assessment · CSDDD timeline: mandatory from 2027</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Commission development of a standalone Human Rights Policy aligned to UNGPs within 6 months. Deploy a Supplier Self-Assessment Questionnaire (SAQ) to all tier-1 suppliers in high-risk jurisdictions, and establish an anonymous ethics hotline. This is a CSDDD pre-compliance requirement — estimated cost €250–500k vs. €60M potential CSDDD fine exposure.</span></div>
-      </div>
-
-      <div id="soc-risk-3" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Supply Chain Labour Risk</div><div style="font-size:12px;color:var(--text-muted)">Severity: Medium · ESRS S2 · UNGP · OECD MNE Guidelines · EU Supply Chain Directive</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('soc-risk-3').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">48</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">41</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">P38</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Medium):</strong> VerdaSteelCo sources iron ore from Brazil and Australia and scrap from 12 countries including Turkey, India, and Eastern Europe — all jurisdictions with documented labour risk factors per ILO and ITUC Global Rights Index. Risk assessment across four dimensions: (1) Policy gap — Supplier Code of Conduct (Basic maturity) references ILO core conventions and prohibits child/forced labour, but lacks audit requirements, corrective action mechanisms, or enforcement provisions. 74% of comparable steel companies have more comprehensive supplier governance per CDP Supply Chain 2023; (2) No supplier audit programme or Self-Assessment Questionnaire (SAQ) process documented in any uploaded document; (3) Scope 3 Category 1 (Purchased goods) not quantified for labour risk geography concentration; (4) ESRS S2 (Workers in the value chain) disclosure requirement will mandate substantive management approach disclosure in the FY2025 CSRD report — current position is non-compliant. Score 48 reflects inherent risk exposure elevated above sector average despite Basic Supplier CoC.</div>
-        <div class="evidence-item"><div class="evidence-source">Sustainability Report 2023 — p.83</div><div class="evidence-text">"We require all direct suppliers to adhere to our Supplier Code of Conduct, which includes commitments on labour rights, health & safety, and environmental standards."</div><div class="evidence-confidence">Method: AI extraction · Confidence: High · No supplier audit programme described</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Introduce a mandatory Supplier ESG Self-Assessment Questionnaire for tier-1 suppliers in high-risk countries (Turkey, India, Brazil). Target on-site audits for the top 20 suppliers by spend within 18 months. Align Supplier CoC with OECD Due Diligence Guidance for Responsible Supply Chains in Mineral Industries.</span></div>
-      </div>
+        <div class="detail-expand"><em style="color:var(--text-muted)">Run an assessment to populate social risk detail, severity assessments, evidence and recommendations from your uploaded documents.</em></div>
       </div><!-- /soc-static-expands -->
     </div>
 
@@ -3650,7 +3206,7 @@ function resetMaterialityFilters() {
         <div class="card">
           <div class="card-header"><div class="card-title">UNGP Due Diligence Assessment</div></div>
           <div class="card-body">
-            <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.7">VerdaSteelCo's social risk management is strongest in occupational H&S, where an improving LTIFR trajectory indicates active management. However, <strong>the absence of any Human Rights Policy or UNGP-aligned due diligence process</strong> represents a significant compliance gap that is increasing in urgency given the CSDDD timeline. The Supplier Code of Conduct is Basic level — it references labour standards but lacks audit requirements, corrective action mechanisms, or enforcement provisions. Grievance mechanisms are described in general terms but effectiveness criteria per UNGP Principle 31 (accessibility, transparency, equitability) cannot be confirmed from available documents.</div>
+            <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.7"><em style="color:var(--text-muted)">Run an assessment to generate the UNGP due diligence assessment from your uploaded documents.</em></div>
           </div>
         </div>
       </div>
@@ -3702,7 +3258,7 @@ function resetMaterialityFilters() {
         <span class="badge badge-green">Q3 — Above Average</span>
         <div style="flex:1;max-width:300px">
           <div class="gauge-track" style="height:10px"><div id="gov-score-gauge" class="gauge-fill gauge-fill-green" style="width:61%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:3px"><span id="gov-score-label">VerdaSteelCo: 61</span><span>Sector avg: 57</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:3px"><span id="gov-score-label">Company: —</span><span>Sector avg: 57</span></div>
         </div>
       </div>
     </div>
@@ -3763,35 +3319,7 @@ function resetMaterialityFilters() {
 
       <!-- Static demo expands (hidden when live data loads) -->
       <div id="gov-static-expands">
-      <div id="gov-risk-1" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">ESG Governance & Board Oversight</div><div style="font-size:12px;color:var(--text-muted)">Severity: Medium · ESRS G1 · OECD Corporate Governance Principles · TCFD</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('gov-risk-1').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">55</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">47</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">P41</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Medium):</strong> ESG governance structure is at Developing maturity — mechanisms are established but integration into strategy and incentives is incomplete. Three positives: (1) Board ESG Committee established 2022 with quarterly review cadence — meets ESRS G1 governance disclosure requirements structurally; (2) Board independence at 78% (7/9 members) exceeds the 75% best practice threshold per ISS 2024 proxy guidelines; (3) ESG Committee mandate includes review of material topic risks. Four material gaps drive the risk score above sector average: (1) No ESG KPIs linked to executive remuneration — present in 78% of MSCI-rated NACE C24 peers; this is the single most powerful governance signal institutional investors look for; (2) TCFD-aligned climate governance disclosure absent — required by ESRS E1-GOV; (3) No formal transition plan approved at board level; (4) ESG Committee output (e.g., approved targets, strategic decisions) not disclosed — ESRS G1 requires description of governance processes, not just committee existence.</div>
-        <div class="evidence-item"><div class="evidence-source">Annual Report 2023 — p.31</div><div class="evidence-text">"The ESG Committee of the Board met 4 times in 2023 and reviewed the Sustainability Report and identified material ESG risks."</div><div class="evidence-confidence">Confidence: High · Qualitative extraction · Remuneration link: not found in AR2023 p.38–42</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Link 15–20% of executive LTIP to quantitative ESG targets (GHG intensity reduction, LTIFR, CSRD programme milestones) with 2025 implementation. Commission a TCFD gap analysis and publish climate governance disclosures in the FY2024 Annual Report — these are legally required under CSRD from FY2025.</span></div>
-      </div>
-
-      <div id="gov-risk-2" class="detail-expand">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <div><div style="font-size:16px;font-weight:800">Ownership Concentration Risk</div><div style="font-size:12px;color:var(--text-muted)">Severity: Medium · ESRS G1 · OECD Principles of Corporate Governance · EU Shareholder Rights II</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('gov-risk-2').classList.remove('open')">✕</button>
-        </div>
-        <div class="grid-3" style="gap:12px;margin-bottom:12px">
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">52</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Risk Score</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">44</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Sector Average</div></div>
-          <div style="background:var(--surface-2);border-radius:5px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">P39</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Percentile</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:10px"><strong>AI Severity Assessment (Medium):</strong> Fondazione Verda (41%) + unnamed PE investor (28%) = 69% combined ownership concentration, with a further 12% held by management. Free float is ~19% — thin by institutional investor standards. Risk assessment across three dimensions: (1) PE exit risk — PE investor holding since 2018 (est.) creates exit pressure within a 7–10 year fund life; M&A or IPO scenario could deprioritise long-term ESG transformation investment. Board representation of PE investor not disclosed — agency risk for long-horizon sustainability capital allocation; (2) Related-party transactions — Fondazione Verda ownership of certain real estate assets leased to VerdaSteelCo are not separately disclosed at fair value in AR2023, creating a gap vs. ESRS G1 related-party disclosure requirements; (3) Dual-class share structure not confirmed but not explicitly excluded — minority investor protections unclear. Positive: Family/foundation ownership provides patient capital alignment with long-term decarbonisation; OECD notes family-controlled firms often outperform on ESG when ownership and strategy are aligned.</div>
-        <div class="evidence-item"><div class="evidence-source">Annual Report 2023 — p.12 (Ownership Structure)</div><div class="evidence-text">"Fondazione Verda holds 41.2% of share capital. As of 31 December 2023, free float represents approximately 19.4% of total issued share capital."</div><div class="evidence-confidence">Confidence: High · PE investor identity not disclosed · Related-party transactions: gap identified</div></div>
-        <div style="margin-top:10px"><strong style="font-size:13px">Top Recommendation:</strong> <span style="font-size:13px;color:var(--text-secondary)">Disclose related-party transactions with Fondazione Verda entities at fair value in accordance with IAS 24 and ESRS G1 requirements. Engage PE investor in a formal ESG strategy dialogue and seek written confirmation of ESG alignment within their investment period — this protects long-term capital allocation for decarbonisation programmes.</span></div>
-      </div>
+        <div class="detail-expand"><em style="color:var(--text-muted)">Run an assessment to populate governance risk detail, severity assessments, evidence and recommendations from your uploaded documents.</em></div>
       </div><!-- /gov-static-expands -->
     </div>
 
@@ -3835,7 +3363,7 @@ function resetMaterialityFilters() {
         <div class="card">
           <div class="card-header"><div class="card-title">Overall Governance Assessment</div></div>
           <div class="card-body">
-            <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.7">Governance is VerdaSteelCo's relative ESG strength. Board composition (58% independence, 33% gender diversity) meets or exceeds NACE C24 peer norms. The Code of Conduct and Anti-Corruption Policy are comprehensive and consistent with ESRS G1 and FCPA/UK Bribery Act principles. <br><br>Key gaps: (1) No whistleblower policy — EU Whistleblower Directive requires formal channel for companies of this size; (2) ESG pay linkage is absent — increasingly expected by investors and required for ESRS G1 compliance; (3) Related-party transaction disclosures with Fondazione entities are insufficiently detailed. Overall governance trajectory is adequate for current requirements but requires attention to close CSRD gaps.</div>
+            <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.7"><em style="color:var(--text-muted)">Run an assessment to generate the overall governance assessment from your uploaded documents.</em></div>
           </div>
         </div>
       </div>
@@ -4038,7 +3566,7 @@ function resetMaterialityFilters() {
         <div class="card-body">
           <div style="font-size:28px;font-weight:800;color:var(--amber-mid);margin-bottom:4px">76</div>
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Risk Score · DRI/EAF transition</div>
-          <div style="font-size:13px;color:var(--text-secondary)">Competitors (SSAB, H2 Green Steel) accelerating DRI-EAF transition. VerdaSteelCo remains 100% BF-BOF with no hydrogen DRI capex announced. Technology stranding risk by 2035.</div>
+          <div style="font-size:13px;color:var(--text-secondary)"><em style="color:var(--text-muted)">Run an assessment to populate transition risk detail from your uploaded documents.</em></div>
           <div style="margin-top:10px;font-size:11px;color:var(--accent);font-weight:600">Click to expand details →</div>
         </div>
       </div>
@@ -4048,7 +3576,7 @@ function resetMaterialityFilters() {
         <div class="card-body">
           <div style="font-size:28px;font-weight:800;color:var(--amber-mid);margin-bottom:4px">68</div>
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Risk Score · ESG-linked procurement</div>
-          <div style="font-size:13px;color:var(--text-secondary)">Automotive OEM customers (Volkswagen, Stellantis) introducing Scope 3 procurement requirements. Without SBTi validation, VerdaSteelCo risks exclusion from preferred supplier lists by 2027.</div>
+          <div style="font-size:13px;color:var(--text-secondary)"><em style="color:var(--text-muted)">Run an assessment to populate transition risk detail from your uploaded documents.</em></div>
           <div style="margin-top:10px;font-size:11px;color:var(--accent);font-weight:600">Click to expand details →</div>
         </div>
       </div>
@@ -4470,7 +3998,7 @@ function resetMaterialityFilters() {
             <td style="padding:10px 14px;text-align:center;font-weight:700;color:var(--amber-mid)">€5M</td>
           </tr>
           <tr id="r13-detail" class="hidden" style="background:var(--surface-2)"><td colspan="8" style="padding:16px 24px">
-            <div style="font-size:13px;color:var(--text-secondary)">EU Whistleblower Protection Directive (2019/1937) required implementation by December 2021 for companies with 250+ employees. VerdaSteelCo (4,800 employees) has no formal, anonymous digital reporting channel. Regulatory fine risk: up to €50k under Italian implementation (D.Lgs. 24/2023). Reputational risk if undisclosed misconduct surfaces. Governance rating agencies (ISS, Glass Lewis) flag this as material gap.</div>
+            <div style="font-size:13px;color:var(--text-secondary)">EU Whistleblower Protection Directive (2019/1937) required implementation by December 2021 for companies with 250+ employees. Where the company has no formal, anonymous digital reporting channel, Regulatory fine risk: up to €50k under Italian implementation (D.Lgs. 24/2023). Reputational risk if undisclosed misconduct surfaces. Governance rating agencies (ISS, Glass Lewis) flag this as material gap.</div>
             <div style="margin-top:10px;font-size:11px;color:var(--text-muted)">Source: Governance gap (not in any disclosure) · EU Directive 2019/1937 · D.Lgs. 24/2023 Italy · ESRS G1</div>
           </td></tr>
 
@@ -4515,7 +4043,7 @@ function resetMaterialityFilters() {
             <td style="padding:10px 14px;text-align:center;font-weight:700;color:var(--amber-mid)">€8M</td>
           </tr>
           <tr id="r16-detail" class="hidden" style="background:var(--surface-2)"><td colspan="8" style="padding:16px 24px">
-            <div style="font-size:13px;color:var(--text-secondary)">VerdaSteelCo is a large public-interest entity (PIE) with CSRD obligation from FY2025 reporting cycle. Double Materiality Assessment (DMA) in early stages — not investor-grade. Key ESRS gaps: E1 (no transition plan), S2 (no HRDD), G1 (no whistleblower policy, no RPT disclosure). Estimated CSRD readiness programme cost: €3–8M over 2 years (data infrastructure, assurance, reporting systems). Regulatory compliance risk if FY2025 report is materially deficient.</div>
+            <div style="font-size:13px;color:var(--text-secondary)">A large public-interest entity (PIE) has a CSRD obligation from the FY2025 reporting cycle. Double Materiality Assessment (DMA) in early stages — not investor-grade. Key ESRS gaps: E1 (no transition plan), S2 (no HRDD), G1 (no whistleblower policy, no RPT disclosure). Estimated CSRD readiness programme cost: €3–8M over 2 years (data infrastructure, assurance, reporting systems). Regulatory compliance risk if FY2025 report is materially deficient.</div>
             <div style="margin-top:10px;font-size:11px;color:var(--text-muted)">Source: Gap analysis conducted during this assessment · ESRS 1/2 cross-cutting standards · CSRD Directive 2022/2464/EU</div>
           </td></tr>
 
@@ -4560,12 +4088,16 @@ function resetMaterialityFilters() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <div style="font-size:18px;font-weight:800;color:var(--text-primary)">Document Library</div>
-        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">Download ready-to-use engagement materials generated from this assessment</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">Ready-to-use engagement materials generated from this assessment</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <span id="eng-doc-count" style="font-size:11px;color:var(--text-muted)">9 documents</span>
         <button class="btn btn-primary btn-sm" onclick="engDownloadAll()">⬇ Download All</button>
       </div>
+    </div>
+
+    <div id="eng-disabled-notice" style="display:none;background:var(--amber-light);border:1px solid var(--amber-mid);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text-secondary)">
+      <strong style="color:var(--amber-mid)">Document export is disabled in this demo build.</strong> The engagement asks, questions and priorities shown on this page reflect your live assessment. Downloadable, fully company-tailored documents are on the roadmap.
     </div>
 
     <!-- Filter tabs -->
@@ -4830,7 +4362,7 @@ function resetMaterialityFilters() {
         <div style="display:flex;flex-direction:column;gap:8px">
           <div style="background:var(--surface-2);border-radius:5px;padding:10px;border-left:3px solid var(--red-mid)">
             <div style="font-size:11px;font-weight:700;color:var(--red-mid);text-transform:uppercase;margin-bottom:3px">Critical Ask #1</div>
-            <div style="font-size:13px;font-weight:600">Will VerdaSteelCo commit to an SBTi-validated 1.5°C-aligned net-zero target within 12 months?</div>
+            <div style="font-size:13px;font-weight:600">Will the company commit to an SBTi-validated 1.5°C-aligned net-zero target within 12 months?</div>
             <div style="font-size:12px;color:var(--text-muted);margin-top:4px">If yes: request interim milestones. If no: request rationale and alternative decarbonisation roadmap.</div>
           </div>
           <div style="background:var(--surface-2);border-radius:5px;padding:10px;border-left:3px solid var(--amber-mid)">
@@ -5135,6 +4667,10 @@ function resetMaterialityFilters() {
     </div>
   </div>
 
+  <div id="report-disabled-notice" style="display:none;background:var(--amber-light);border:1px solid var(--amber-mid);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text-secondary)">
+    <strong style="color:var(--amber-mid)">Report export is disabled in this demo build.</strong> The on-screen preview below reflects your live assessment. Downloadable, fully company-tailored report generation is on the roadmap.
+  </div>
+
   <div style="display:grid;grid-template-columns:340px 1fr;gap:20px">
 
     <!-- Left: Configuration panel -->
@@ -5232,11 +4768,11 @@ function resetMaterialityFilters() {
           <div style="text-align:center;border-bottom:2px solid var(--accent);padding-bottom:20px;margin-bottom:20px">
             <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">ESGIntel Platform — Confidential</div>
             <div style="font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:6px">ESG Due Diligence Report</div>
-            <div style="font-size:16px;color:var(--text-secondary);margin-bottom:14px">VerdaSteelCo S.p.A.</div>
+            <div style="font-size:16px;color:var(--text-secondary);margin-bottom:14px" id="report-preview-company">Run an assessment to generate a report</div>
             <div style="display:flex;justify-content:center;gap:20px;font-size:12px;color:var(--text-muted)">
-              <span>Assessment Date: June 2024</span>
+              <span>Assessment Date: —</span>
               <span>·</span>
-              <span>Sector: NACE C24 — Basic Metals</span>
+              <span>Sector: —</span>
               <span>·</span>
               <span>Analyst: ESGIntel AI + Review</span>
             </div>
@@ -5251,8 +4787,7 @@ function resetMaterialityFilters() {
               <div style="text-align:center;background:var(--surface-2);border-radius:5px;padding:10px"><div style="font-size:22px;font-weight:800;color:var(--text-secondary)">14</div><div style="font-size:10px;color:var(--text-muted)">Material Topics</div></div>
               <div style="text-align:center;background:var(--surface-2);border-radius:5px;padding:10px"><div style="font-size:22px;font-weight:800;color:var(--amber-mid)">68%</div><div style="font-size:10px;color:var(--text-muted)">Data Quality</div></div>
             </div>
-            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">VerdaSteelCo S.p.A. presents a <strong>High ESG Risk profile</strong> (Score: 38/100, P19), driven primarily by carbon-intensive operations without an emissions reduction pathway, a material water scarcity exposure at key European facilities, and critical governance gaps in whistleblower protection and human rights due diligence. The overall climate risk score of 72 (P84) reflects exceptional transition risk from EU ETS and CBAM, with scenario analysis indicating potential EBITDA erosion of 85–89% under disorderly or high-warming pathways by 2030.</p>
-            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">The assessment identifies <strong>4 Critical, 7 High, and 5 Medium</strong> ESG risk findings across 16 topics. The absence of an SBTi-aligned net-zero target and a formal Human Rights Due Diligence policy represent the most significant near-term liabilities, each with material regulatory and financial consequences under EU CSRD/CSDDD frameworks entering force in 2025–2027.</p>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7"><em style="color:var(--text-muted)">Run an assessment to generate the executive summary from your uploaded documents. The full report draws its narrative and data tables from the live assessment result.</em></p>
           </div>
 
           <!-- Table of Contents preview -->
@@ -5383,8 +4918,8 @@ function resetMaterialityFilters() {
           <table class="data-table w-full">
             <thead><tr><th>Action</th><th>Company</th><th>Date</th></tr></thead>
             <tbody>
-              <tr><td>ESG Assessment Run</td><td>VerdaSteelCo S.p.A.</td><td style="color:var(--text-muted)">07 Jun 2025</td></tr>
-              <tr><td>Report Generated</td><td>VerdaSteelCo S.p.A.</td><td style="color:var(--text-muted)">07 Jun 2025</td></tr>
+              <tr><td>ESG Assessment Run</td><td>—</td><td style="color:var(--text-muted)">—</td></tr>
+              <tr><td>Report Generated</td><td>—</td><td style="color:var(--text-muted)">—</td></tr>
               <tr><td>ESG Assessment Run</td><td>NordAluminium AS</td><td style="color:var(--text-muted)">02 Jun 2025</td></tr>
               <tr><td>Team Invite Sent</td><td>—</td><td style="color:var(--text-muted)">28 May 2025</td></tr>
               <tr><td>ESG Assessment Run</td><td>CemTech Iberia S.L.</td><td style="color:var(--text-muted)">21 May 2025</td></tr>
@@ -5877,7 +5412,7 @@ function resetMaterialityFilters() {
 
           <div class="doc-section-title">API Reference</div>
           <div class="doc-item" onclick="openPanel('API Authentication','<strong>Base URL</strong><br><code style=\'background:var(--surface-2);padding:2px 6px;border-radius:3px\'>https://api.esgIntel.io/v1</code><br><br><strong>Authentication</strong><br>Include your API key in every request header:<br><code style=\'background:var(--surface-2);padding:2px 6px;border-radius:3px\'>Authorization: Bearer esg_live_your_key_here</code><br><br><strong>Rate limits</strong><br>Production: 60 requests/minute · Sandbox: 10 requests/minute<br><br><strong>Versioning</strong><br>Current version: v1. Breaking changes will be released as v2 with 90 days deprecation notice.')"><div class="doc-item-title">🔑 API Authentication</div><div class="doc-item-sub">Keys, headers, rate limits, versioning</div></div>
-          <div class="doc-item" onclick="openPanel('POST /assessments','<strong>POST /v1/assessments</strong><br><br>Trigger a new ESG assessment programmatically.<br><br><strong>Request body (JSON)</strong><br><pre style=\'background:var(--surface-2);padding:12px;border-radius:6px;font-size:12px;overflow-x:auto\'>{<br>  "company_name": "VerdaSteelCo S.p.A.",<br>  "website": "https://verdasteel.it",<br>  "nace_code": "C24",<br>  "peer_group": "nace-c24-eu27",<br>  "documents": [base64_encoded_pdfs]<br>}</pre><br><strong>Response</strong><br>Returns assessment_id and polling URL. Poll GET /assessments/{id} for status.<br><br><strong>Webhook</strong><br>Configure webhook URL in Integrations to receive a POST when complete.')"><div class="doc-item-title">📤 POST /assessments</div><div class="doc-item-sub">Trigger a new assessment via API</div></div>
+          <div class="doc-item" onclick="openPanel('POST /assessments','<strong>POST /v1/assessments</strong><br><br>Trigger a new ESG assessment programmatically.<br><br><strong>Request body (JSON)</strong><br><pre style=\'background:var(--surface-2);padding:12px;border-radius:6px;font-size:12px;overflow-x:auto\'>{<br>  "company_name": "Example Company Ltd",<br>  "website": "https://example.com",<br>  "nace_code": "C24",<br>  "peer_group": "nace-c24-eu27",<br>  "documents": [base64_encoded_pdfs]<br>}</pre><br><strong>Response</strong><br>Returns assessment_id and polling URL. Poll GET /assessments/{id} for status.<br><br><strong>Webhook</strong><br>Configure webhook URL in Integrations to receive a POST when complete.')"><div class="doc-item-title">📤 POST /assessments</div><div class="doc-item-sub">Trigger a new assessment via API</div></div>
 
           <div class="doc-section-title">Release Notes</div>
           <div class="doc-item" onclick="openPanel('v2.4.0 Release Notes (Jun 2025)','<strong>v2.4.0 — June 2025</strong><br><br>✨ <strong>New</strong><br>• Data Sources page — all uploaded docs and public intelligence sources now visible in one place<br>• ESG Risk Score card now clickable and leads directly to ESG Risk Overview<br>• Document Library renamed and improved download format fidelity<br>• Data Completeness card dims when no documents uploaded<br><br>🔧 <strong>Improved</strong><br>• Report Generator now produces .docx files<br>• E/S/G pillar cards in Risk Overview are directly clickable without nav text clutter<br>• Climate Risk and Material Topics cards navigate directly on click<br><br>🐛 <strong>Fixed</strong><br>• File downloads now retain correct extension (PDF, PPTX, DOCX, XLSX)<br>• Minor layout fixes on narrow viewports')"><div class="doc-item-title">🆕 v2.4.0 — June 2025</div><div class="doc-item-sub">Account pages, auth flow, download format fixes, Data Sources page</div></div>
@@ -6267,6 +5802,31 @@ async function _authApi(path, body, method) {
   return data;
 }
 
+// Authenticated JSON fetch for the real admin/account endpoints (JWT backend).
+// Throws an error tagged `.noToken` when the user isn't really signed in, and
+// `.forbidden` on a 401/403 — callers use these to show a friendly message
+// instead of a broken UI. All other errors carry the backend detail message.
+async function _apiFetch(path, opts) {
+  opts = opts || {};
+  const token = _getToken();
+  if (!token) { const e = new Error('Not signed in'); e.noToken = true; throw e; }
+  const res = await fetch(path, {
+    method: opts.method || (opts.body ? 'POST' : 'GET'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (res.status === 401 || res.status === 403) {
+    const e = new Error('Not authorized'); e.forbidden = true; e.status = res.status; throw e;
+  }
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) throw new Error(data.detail || data.message || ('Request failed (' + res.status + ')'));
+  return data;
+}
+
 // Called once the backend returns a {token, user} pair → log the user in.
 function _finishLogin(data) {
   _setToken(data.token);
@@ -6357,7 +5917,7 @@ function applyUserToUI(firebaseUser, profile) {
   if (lnEl) lnEl.value = lastName;
   const emailEl = document.getElementById('acct-email');
   if (emailEl) emailEl.value = email;
-  const companyEl = document.getElementById('acct-company');
+  const companyEl = document.getElementById('acct-org');
   if (companyEl && profile && profile.company) companyEl.value = profile.company;
 }
 
@@ -6563,25 +6123,35 @@ function _demoSignIn(email, name, provider) {
 let _allAdminUsers = [];
 
 async function adminLoadUsers() {
-  if (!fbDb) {
-    document.getElementById('admin-loading').textContent = 'Firestore not configured. Add FIREBASE_CONFIG values to enable live data.';
-    return;
-  }
-  document.getElementById('admin-loading').style.display = 'block';
-  document.getElementById('admin-users-table').style.display = 'none';
+  const loadingEl = document.getElementById('admin-loading');
+  const tableEl = document.getElementById('admin-users-table');
+  const noUsersEl = document.getElementById('admin-no-users');
+  if (tableEl) tableEl.style.display = 'none';
+  if (noUsersEl) noUsersEl.style.display = 'none';
+  if (loadingEl) { loadingEl.style.display = 'block'; loadingEl.textContent = 'Loading users…'; }
 
   try {
-    const snap = await fbDb.collection('users').orderBy('createdAt', 'desc').get();
-    _allAdminUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const data = await _apiFetch('/api/admin/users');
+    _allAdminUsers = data.users || [];
     adminRenderUsers(_allAdminUsers);
-    // Stats
+    // Stats — Total & Pro come from the user list; New-this-week is computed
+    // from createdAt (the /stats endpoint tracks analyses, not new signups).
     const now = Date.now();
     const week = 7 * 24 * 3600 * 1000;
-    document.getElementById('admin-stat-total').textContent = _allAdminUsers.length;
-    document.getElementById('admin-stat-new').textContent = _allAdminUsers.filter(u => u.createdAt && (now - u.createdAt.toMillis()) < week).length;
-    document.getElementById('admin-stat-pro').textContent = _allAdminUsers.filter(u => u.plan === 'pro' || u.plan === 'enterprise').length;
+    const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setTxt('admin-stat-total', _allAdminUsers.length);
+    setTxt('admin-stat-new', _allAdminUsers.filter(u => u.createdAt && (now - new Date(u.createdAt).getTime()) < week).length);
+    setTxt('admin-stat-pro', _allAdminUsers.filter(u => u.plan === 'pro' || u.plan === 'enterprise').length);
+    // Best-effort platform stats (does not block the table if it fails).
+    try { await _apiFetch('/api/admin/stats'); } catch(e) {}
   } catch(e) {
-    document.getElementById('admin-loading').textContent = 'Error loading users: ' + e.message + '. Check Firestore security rules.';
+    if (!loadingEl) return;
+    loadingEl.style.display = 'block';
+    if (e.noToken || e.forbidden) {
+      loadingEl.textContent = 'Sign in with a real admin account to view live user data.';
+    } else {
+      loadingEl.textContent = 'Error loading users: ' + e.message;
+    }
   }
 }
 
@@ -6596,9 +6166,10 @@ function adminRenderUsers(users) {
   users.forEach(u => {
     const initials = ((u.displayName || u.email || '?').split(/[\s@]/)[0][0] || '?').toUpperCase() +
                      ((u.displayName || '  ').split(' ')[1]?.[0] || '').toUpperCase();
-    const joined = u.createdAt ? new Date(u.createdAt.toMillis()).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-    const lastLogin = u.lastLogin ? new Date(u.lastLogin.toMillis()).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '—';
-    const providerIcon = u.provider === 'google.com' ? '🔵 Google' : u.provider === 'twitter.com' ? '⚫ X' : '✉️ Email';
+    const joined = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '—';
+    const prov = (u.provider || '').toLowerCase();
+    const providerIcon = prov.includes('google') ? '🔵 Google' : (prov.includes('twitter') || prov === 'x') ? '⚫ X' : '✉️ Email';
     const planCls = u.plan === 'enterprise' ? 'admin-plan-enterprise' : u.plan === 'pro' ? 'admin-plan-pro' : 'admin-plan-free';
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -6634,36 +6205,52 @@ function adminFilterUsers() {
 }
 
 async function adminChangePlan(uid, plan) {
-  if (!fbDb) return;
-  await fbDb.collection('users').doc(uid).update({ plan });
-  showToast('Plan updated to ' + plan);
-  const u = _allAdminUsers.find(x => x.id === uid);
-  if (u) u.plan = plan;
+  try {
+    await _apiFetch('/api/admin/users/' + encodeURIComponent(uid) + '/plan', { method: 'PATCH', body: { plan } });
+    showToast('Plan updated to ' + plan);
+    const u = _allAdminUsers.find(x => x.id === uid);
+    if (u) u.plan = plan;
+  } catch(e) {
+    if (e.noToken || e.forbidden) {
+      showToast('Sign in with a real admin account to change plans.');
+    } else {
+      showToast('Could not update plan: ' + e.message);
+    }
+  }
 }
 
-function adminExportCSV() {
-  if (!_allAdminUsers.length) { showToast('No users loaded — click Refresh first.'); return; }
-  const cols = ['email','displayName','company','role','plan','provider','createdAt','lastLogin'];
-  const rows = [cols.join(',')].concat(_allAdminUsers.map(u => cols.map(c => {
-    let v = u[c] || '';
-    if (v && v.toMillis) v = new Date(v.toMillis()).toISOString();
-    return '"' + String(v).replace(/"/g,'""') + '"';
-  }).join(',')));
-  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'esgintel_users_' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
+async function adminExportCSV() {
+  // The CSV lives behind an authenticated endpoint, so a plain <a href> can't
+  // send the Bearer token — fetch it as a blob and trigger the download.
+  const token = _getToken();
+  if (!token) { showToast('Sign in with a real admin account to export users.'); return; }
+  try {
+    const res = await fetch('/api/admin/users/export', {
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (res.status === 401 || res.status === 403) {
+      showToast('Sign in with a real admin account to export users.');
+      return;
+    }
+    if (!res.ok) { showToast('Export failed (' + res.status + ')'); return; }
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'esgintel_users_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  } catch(e) {
+    showToast('Export failed: ' + e.message);
+  }
 }
 
 function adminToggleSetting(key, val) {
-  const track = document.getElementById('admin-toggle-' + key.replace(/([A-Z])/g,'-$1').toLowerCase().replace('mode','-mode').replace('enabled','-enabled').replace('verification','-verify') + '-track');
-  const thumb = document.getElementById('admin-toggle-' + key.replace(/([A-Z])/g,'-$1').toLowerCase().replace('mode','-mode').replace('enabled','-enabled').replace('verification','-verify') + '-thumb');
+  const slug = { demoMode: 'demo', signupsEnabled: 'signups', requireVerification: 'verify' }[key] || key;
+  const track = document.getElementById('admin-toggle-' + slug + '-track');
+  const thumb = document.getElementById('admin-toggle-' + slug + '-thumb');
   if (track) track.style.background = val ? '#4ade80' : '#cbd5e0';
   if (thumb) thumb.style.left = val ? '20px' : '2px';
-  if (fbDb && fbAuth && fbAuth.currentUser?.email === 'swikrittt@gmail.com') {
-    fbDb.collection('settings').doc('platform').set({ [key]: val }, { merge: true });
-  }
+  // Platform settings have no backend endpoint — keep this toggle session-only.
   showToast(key + ' set to ' + val);
 }
 
@@ -6732,48 +6319,66 @@ function saveProfile() {
     org: document.getElementById('acct-org').value,
     bio: document.getElementById('acct-bio').value
   };
+  // Cache the full rich profile locally (backend only stores name + company).
   localStorage.setItem('esgIntel_profile', JSON.stringify(data));
   // Update session name
   const session = JSON.parse(localStorage.getItem('esgIntel_session') || '{}');
   session.firstName = data.firstName;
   session.lastName = data.lastName;
   session.email = data.email;
+  session.displayName = (data.firstName + ' ' + data.lastName).trim();
   localStorage.setItem('esgIntel_session', JSON.stringify(session));
-  applyUserToUI(session);
+  applyUserToUI(null, session);
   document.getElementById('acct-save-btn').disabled = true;
-  showToast('✅ Profile saved');
+  // Persist name + company to the backend (source of truth).
+  const displayName = (data.firstName + ' ' + data.lastName).trim();
+  _apiFetch('/api/account/profile', { method: 'PUT', body: { displayName, company: data.org } })
+    .then(() => showToast('✅ Profile saved'))
+    .catch(e => {
+      if (e.noToken || e.forbidden) showToast('Profile saved locally. Sign in to sync across devices.');
+      else showToast('Saved locally — sync failed: ' + e.message);
+    });
 }
 
-function savePrefs() {
-  const prefs = {
-    currency: document.getElementById('pref-currency')?.value,
-    language: document.getElementById('pref-language')?.value,
-    format: document.getElementById('pref-format')?.value,
-    peer: document.getElementById('pref-peer')?.value,
-    date: document.getElementById('pref-date')?.value
+// Notification toggles and general preferences share the backend's free-form
+// notificationPrefs JSON blob (namespaced), since the account API exposes only
+// displayName/company/notificationPrefs. Both save handlers persist the whole
+// blob so neither clobbers the other.
+function _gatherNotifPrefs() {
+  const c = id => !!document.getElementById(id)?.checked;
+  const v = id => document.getElementById(id)?.value;
+  return {
+    notif: {
+      assess: c('notif-assess'), reg: c('notif-reg'), digest: c('notif-digest'),
+      team: c('notif-team'), product: c('notif-product'), scoreChange: c('notif-score-change'),
+      docExpiry: c('notif-doc-expiry'), quality: c('notif-quality'), comments: c('notif-comments')
+    },
+    prefs: {
+      currency: v('pref-currency'), language: v('pref-language'), format: v('pref-format'),
+      peer: v('pref-peer'), date: v('pref-date')
+    }
   };
-  localStorage.setItem('esgIntel_prefs', JSON.stringify(prefs));
-  showToast('✅ Preference saved');
 }
 
-function saveNotifPrefs() {
-  const notifs = {
-    assess: document.getElementById('notif-assess')?.checked,
-    reg: document.getElementById('notif-reg')?.checked,
-    digest: document.getElementById('notif-digest')?.checked,
-    team: document.getElementById('notif-team')?.checked,
-    product: document.getElementById('notif-product')?.checked,
-    scoreChange: document.getElementById('notif-score-change')?.checked,
-    docExpiry: document.getElementById('notif-doc-expiry')?.checked,
-    quality: document.getElementById('notif-quality')?.checked,
-    comments: document.getElementById('notif-comments')?.checked
-  };
-  localStorage.setItem('esgIntel_notifs', JSON.stringify(notifs));
-  showToast('✅ Notification preferences saved');
+function _persistNotifPrefs(okMsg) {
+  const np = _gatherNotifPrefs();
+  // Cache locally under the original keys for offline use.
+  localStorage.setItem('esgIntel_notifs', JSON.stringify(np.notif));
+  localStorage.setItem('esgIntel_prefs', JSON.stringify(np.prefs));
+  _apiFetch('/api/account/profile', { method: 'PUT', body: { notificationPrefs: np } })
+    .then(() => showToast(okMsg))
+    .catch(e => {
+      if (e.noToken || e.forbidden) showToast('Saved locally. Sign in to sync across devices.');
+      else showToast('Saved locally — sync failed: ' + e.message);
+    });
 }
 
-function loadPersistedData() {
-  // Profile
+function savePrefs() { _persistNotifPrefs('✅ Preference saved'); }
+
+function saveNotifPrefs() { _persistNotifPrefs('✅ Notification preferences saved'); }
+
+// Apply the locally-cached account data to the DOM (instant / offline path).
+function _applyAccountCache() {
   const profile = JSON.parse(localStorage.getItem('esgIntel_profile') || 'null');
   if (profile) {
     const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
@@ -6785,25 +6390,52 @@ function loadPersistedData() {
     set('acct-org', profile.org);
     set('acct-bio', profile.bio);
   }
-  // Prefs
   const prefs = JSON.parse(localStorage.getItem('esgIntel_prefs') || 'null');
-  if (prefs) {
-    const setS = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-    setS('pref-currency', prefs.currency);
-    setS('pref-language', prefs.language);
-    setS('pref-format', prefs.format);
-    setS('pref-peer', prefs.peer);
-    setS('pref-date', prefs.date);
-  }
-  // Notifs
+  if (prefs) _applyGeneralPrefs(prefs);
   const notifs = JSON.parse(localStorage.getItem('esgIntel_notifs') || 'null');
-  if (notifs) {
-    const setC = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.checked = val; };
-    setC('notif-assess', notifs.assess); setC('notif-reg', notifs.reg);
-    setC('notif-digest', notifs.digest); setC('notif-team', notifs.team);
-    setC('notif-product', notifs.product); setC('notif-score-change', notifs.scoreChange);
-    setC('notif-doc-expiry', notifs.docExpiry); setC('notif-quality', notifs.quality);
-    setC('notif-comments', notifs.comments);
+  if (notifs) _applyNotifToggles(notifs);
+}
+
+function _applyGeneralPrefs(prefs) {
+  const setS = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  setS('pref-currency', prefs.currency);
+  setS('pref-language', prefs.language);
+  setS('pref-format', prefs.format);
+  setS('pref-peer', prefs.peer);
+  setS('pref-date', prefs.date);
+}
+
+function _applyNotifToggles(notifs) {
+  const setC = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.checked = val; };
+  setC('notif-assess', notifs.assess); setC('notif-reg', notifs.reg);
+  setC('notif-digest', notifs.digest); setC('notif-team', notifs.team);
+  setC('notif-product', notifs.product); setC('notif-score-change', notifs.scoreChange);
+  setC('notif-doc-expiry', notifs.docExpiry); setC('notif-quality', notifs.quality);
+  setC('notif-comments', notifs.comments);
+}
+
+async function loadPersistedData() {
+  // 1) Paint from the local cache immediately (works offline / before login).
+  _applyAccountCache();
+  // 2) Refresh from the backend (source of truth) when a real token is present.
+  try {
+    const p = await _apiFetch('/api/account/profile');
+    if (p.displayName) {
+      const parts = p.displayName.split(' ');
+      const fn = document.getElementById('acct-first-name');
+      const ln = document.getElementById('acct-last-name');
+      if (fn && parts[0]) fn.value = parts[0];
+      if (ln && parts.length > 1) ln.value = parts.slice(1).join(' ');
+    }
+    const org = document.getElementById('acct-org');
+    if (org && p.company) org.value = p.company;
+    const em = document.getElementById('acct-email');
+    if (em && p.email) em.value = p.email;
+    const np = p.notificationPrefs || {};
+    if (np.notif) _applyNotifToggles(np.notif);
+    if (np.prefs) _applyGeneralPrefs(np.prefs);
+  } catch(e) {
+    // No token / offline — the localStorage cache is already applied.
   }
 }
 
@@ -6840,13 +6472,20 @@ function sendInvite() {
   const email = document.getElementById('invite-email').value.trim();
   const role = document.getElementById('invite-role').value;
   if (!email) { showToast('Enter an email address first'); return; }
-  showToast(`✅ Invite sent to ${email} as ${role}`);
-  document.getElementById('invite-email').value = '';
-  document.getElementById('invite-form').classList.add('hidden');
+  _apiFetch('/api/account/team/invite', { method: 'POST', body: { email, role } })
+    .then(() => {
+      showToast(`✅ Invite sent to ${email} as ${role}`);
+      document.getElementById('invite-email').value = '';
+      document.getElementById('invite-form').classList.add('hidden');
+    })
+    .catch(e => {
+      if (e.noToken || e.forbidden) showToast('Sign in with a real account to invite teammates.');
+      else showToast('Could not send invite: ' + e.message);
+    });
 }
 
 // Run auth init on page load (custom FastAPI backend handles all auth now)
-// Demo seed for the static VerdaSteelCo showcase (overridden by populateApp on a real assessment)
+// Unused placeholder geography sample (no longer seeded; geographic exposure is populated from the real assessment)
 const GEO_DEMO = [
   { country: 'Italy', iso_a3: 'ITA', lat: 43.0, lng: 12.0, role: 'HQ — Brescia & Taranto', risk_level: 'medium', climate_risk: 'medium', share: '62% revenue',
     rationale: 'Headquarters and primary production (Brescia, Taranto). Directly in scope for EU CSRD, CBAM and ETS.',
@@ -6891,8 +6530,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dhN && cfg.userName) dhN.textContent = cfg.userName;
   const dhE  = document.getElementById('topbar-dh-email');
   if (dhE && cfg.userEmail) dhE.textContent = cfg.userEmail;
-  // Seed demo geography
-  if (!geoExposure.length) setGeoExposure(GEO_DEMO);
+  // No demo geography seeded — geographic exposure is populated by populateApp on a real assessment.
+  if (!geoExposure.length) setGeoExposure([]);
 });
 document.addEventListener('click', function(e) {
   const profile = document.querySelector('.topbar-profile');
@@ -7058,6 +6697,11 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(n => {
     if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + page + "'")) n.classList.add('active');
   });
+  // update sidebar action buttons (ESG Engagement / Generate Report) — blue only when active
+  document.querySelectorAll('.sidebar-action-btn').forEach(b => {
+    const oc = b.getAttribute('onclick') || '';
+    b.classList.toggle('active', oc.includes("'" + page + "'"));
+  });
 }
 
 // ===== SIDE PANEL =====
@@ -7159,7 +6803,8 @@ function renderEngagementTab(r) {
   const climateRisks = risks.filter(x => x.category === 'climate' || x.category === 'environmental');
   const socialRisks  = risks.filter(x => x.category === 'social');
   const govRisks     = risks.filter(x => x.category === 'governance');
-  const moduleCount  = Math.min(6, [climateRisks, socialRisks, govRisks].filter(g => g.length).length + 2); // +2 for CSRD + Strategic
+  const hasClimateDetailModule = ((climate.physical_risks || []).length + (climate.transition_risks || []).length) > 0;
+  const moduleCount  = Math.min(6, [climateRisks, socialRisks, govRisks].filter(g => g.length).length + (hasClimateDetailModule ? 1 : 0) + 2); // +2 for CSRD + Strategic (always present)
   const hasAnyCritical = critCount > 0;
   const timeline = hasAnyCritical ? '6-12 mo' : '12 mo';
 
@@ -7287,12 +6932,6 @@ function renderEngagementTab(r) {
       `EU Directive 2019/1937-compliant reporting channel template for ${name} — anonymous, confidential, non-retaliation`,
       '','DOCX','','Whistleblower Policy Template.docx', true);
   }
-  if (needsHnS && !needsHumanRights && !needsWhistleblower) {
-    policies += _docCard('📋','var(--red-mid)',
-      'H&S Policy Template',
-      `ISO 45001-aligned health & safety policy draft for ${name} — addresses identified safety risk gaps`,
-      '','DOCX','','Whistleblower Policy Template.docx', true);
-  }
   if (!policies) {
     // Fallback: show both standard policies as non-priority
     policies += _docCard('📋','var(--red-mid)',
@@ -7350,7 +6989,7 @@ function renderEngagementTab(r) {
     if (sev === 'Critical') return '<span class="badge badge-red" style="font-size:10px">Critical</span>';
     if (sev === 'High')     return '<span class="badge badge-amber" style="font-size:10px">High</span>';
     if (sev === 'Medium')   return '<span class="badge badge-blue" style="font-size:10px">Medium</span>';
-    return '<span class="badge badge-green" style="font-size:10px">Medium</span>';
+    return '<span class="badge badge-green" style="font-size:10px">' + escHtml(sev || 'Low') + '</span>';
   }
   function _questionItem(label, color, text, sub) {
     return `<div style="background:var(--surface-2);border-radius:5px;padding:10px${color ? ';border-left:3px solid ' + color : ''}">
@@ -7554,6 +7193,9 @@ async function generateCanvaDeck(type) {
   const card = CANVA_CARDS[type];
   if (!card) return;
 
+  // Cancel any still-running poll from a previous click on this same card
+  if (card._pollHandle) { clearInterval(card._pollHandle); card._pollHandle = null; }
+
   // Show loading state
   _canvaSetState(type, `
     <div style="background:#f3e8ff;border-radius:6px;padding:10px 12px">
@@ -7597,6 +7239,7 @@ async function generateCanvaDeck(type) {
       attempts++;
       if (attempts > maxAttempts) {
         clearInterval(poll);
+        card._pollHandle = null;
         _canvaSetState(type, _canvaIdleHtml(type));
         showToast('⚠ Canva generation timed out — try again');
         return;
@@ -7607,11 +7250,13 @@ async function generateCanvaDeck(type) {
         const status = await sr.json();
         if (status.status === 'complete' && status.canva_url) {
           clearInterval(poll);
+          card._pollHandle = null;
           _canvaSetState(type, _canvaReadyHtml(type, status.canva_url, company));
           showToast('🎨 ' + card.label + ' ready in Canva!');
         }
       } catch(e) { /* keep polling */ }
     }, 4000);
+    card._pollHandle = poll;
 
   } catch(err) {
     _canvaSetState(type, _canvaIdleHtml(type));
@@ -7635,38 +7280,18 @@ async function restoreCanvaStates() {
 
 // ─── ENGAGEMENT DOCUMENT DOWNLOADS ──────────────────────────────────────────
 // Engagement docs are generated for real by the backend (.pptx/.pdf/.docx/.xlsx)
+// Engagement document downloads are intentionally DISABLED in this demo build.
+// The document generators still produce templated sample content rather than
+// fully company-tailored deliverables, so downloading is turned off to keep the
+// platform honest. The on-screen engagement content (asks, questions, priorities)
+// remains driven by the real assessment.
 async function engDownload(filename) {
-  showToast('⏳ Generating ' + filename + '…');
-  try {
-    const res = await fetch('/api/documents/engagement?file=' + encodeURIComponent(filename));
-    if (!res.ok) {
-      let msg = 'Generation failed (' + res.status + ')';
-      try { const j = await res.json(); msg = j.detail || msg; } catch (e) {}
-      throw new Error(msg);
-    }
-    const blob = await res.blob();
-    // Filename comes back via Content-Disposition; fall back to the requested name.
-    let outName = filename;
-    const cd = res.headers.get('Content-Disposition') || '';
-    const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^\";]+)"?/i);
-    if (m) outName = decodeURIComponent(m[1]);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = outName;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('⬇ ' + outName + ' downloaded');
-  } catch (err) {
-    showToast('⚠ ' + err.message);
-  }
+  showToast('📄 Document export is disabled in this demo build — engagement content on-screen reflects your live assessment.');
+  const notice = document.getElementById('eng-disabled-notice');
+  if (notice) { notice.style.display = ''; notice.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
 }
 async function engDownloadAll() {
-  const files = Object.keys(engDocContent);
-  showToast('⬇ Generating all ' + files.length + ' engagement documents…');
-  for (const f of files) {
-    await engDownload(f);                 // sequential so the browser allows each save
-    await new Promise(r => setTimeout(r, 250));
-  }
+  engDownload('all');
 }
 
 // ===== METHODOLOGY CONTENT VARIABLES =====
@@ -7675,10 +7300,10 @@ ESG Risk Score = (E_Score × 0.40) + (S_Score × 0.30) + (G_Score × 0.30)<br><b
 Each pillar score is calculated from: Policy Maturity (40%) + KPI Percentile vs. NACE C24 peers (40%) + Regulatory Exposure (20%).<br><br>
 <strong>Data sources:</strong> CDP 2023, S&P Global Trucost, Eurostat Environmental Accounts, Bloomberg ESG, proxy voting disclosures, company sustainability reports 2021–2023.<br><br>
 <strong>Peer group:</strong> 47 NACE C24 companies, EU27, 1,000–10,000 employees. Normalised to 0–100 scale; higher = greater risk exposure.<br><br>
-<strong>Confidence:</strong> Overall 72% — limited by Scope 3 data gaps and absence of third-party assurance on disclosed figures.`;
+<strong>Confidence:</strong> Derived per assessment from data completeness and evidence quality — typically limited by Scope 3 data gaps and absence of third-party assurance on disclosed figures.`;
 
 const methodologyMateriality = `<strong>Double Materiality Assessment Approach</strong><br><br>
-VerdaSteelCo's materiality assessment follows ESRS 1 double materiality requirements — topics are assessed on two dimensions:<br><br>
+The materiality assessment follows ESRS 1 double materiality requirements — topics are assessed on two dimensions:<br><br>
 <strong>1. Impact Materiality:</strong> Scale × Scope × Irremediability of actual and potential impacts on people and environment (aligned to ESRS 1 AR7)<br><br>
 <strong>2. Financial Materiality:</strong> Magnitude × Likelihood of financial effects from risks and opportunities (aligned to ESRS 1 AR8 / IFRS S1)<br><br>
 <strong>Topic scoring:</strong> Each material topic scored 1–5 on each dimension. Topics above the materiality threshold (score ≥3 on either axis) are included as material.<br><br>
@@ -7689,24 +7314,20 @@ const methodologyEnv = `<strong>Environmental Risk Score Methodology</strong><br
 Environmental Risk Score = (Policy_Maturity × 0.40) + (KPI_Percentile × 0.40) + (Regulatory_Exposure × 0.20)<br><br>
 <strong>Policy Maturity (40%):</strong> Rated 1–5 based on document review — 5=Certified system with targets, 4=Formal policy with targets, 3=Policy exists, 2=Principles-level, 1=Absent.<br><br>
 <strong>KPI Percentile (40%):</strong> Each KPI mapped to NACE C24 peer percentile (n=47 companies). Worst percentile = 100 risk contribution; best = 0.<br><br>
-<strong>Regulatory Exposure (20%):</strong> Binary flags weighted by financial penalty quantum — EU ETS (€68M/yr by 2030), CBAM (€18–28M/yr), IED permit review (€15–30M capex), ESRS disclosure gaps.<br><br>
+<strong>Regulatory Exposure (20%):</strong> Binary flags weighted by financial penalty quantum — e.g. EU ETS carbon cost, CBAM, IED permit review capex, and ESRS disclosure gaps, each quantified per company from the assessment.<br><br>
 <strong>Peer group:</strong> 47 NACE C24 EU companies. Data: CDP Climate 2023, Eurostat, OECD IEED, S&P Trucost.`;
 
 const methodologySoc = `<strong>Social Risk Score Methodology</strong><br><br>
 Social Risk Score = (Policy_Maturity × 0.40) + (KPI_Percentile × 0.40) + (Regulatory_Exposure × 0.20)<br><br>
-<strong>Social KPI Benchmarks (NACE C24, n=47):</strong><br>
-LTIFR: VerdaSteelCo 2.8 vs. sector median 2.1 (P38)<br>
-Gender diversity: 22% vs. sector median 24% (P42)<br>
-Training hours: 24 hrs/yr vs. sector median 21 (P58 — positive)<br>
-Turnover: 9.2% vs. sector median 11.4% (P44 — positive)<br><br>
+<strong>Social KPI Benchmarks (sector peer group):</strong> The assessed company's values for LTIFR, gender diversity, training hours per employee and voluntary turnover are each mapped to a sector-peer percentile. Percentiles are derived from the peer benchmark set for the company's NACE sector and used as the KPI-percentile input to the score.<br><br>
 <strong>HRDD Gap Assessment:</strong> Absent Human Rights Policy = +8 points. Absent Supplier CoC audit = +5 points. CSDDD regulatory proximity = +12 points.<br><br>
 <strong>Data sources:</strong> EU-OSHA sector statistics, EUROSTAT LFS, CDP Supply Chain 2023, CSRD pilot report corpus.`;
 
 const methodologyGov = `<strong>Governance Risk Score Methodology</strong><br><br>
 Governance Risk Score = (Policy_Maturity × 0.45) + (Disclosure_Quality × 0.35) + (Regulatory_Exposure × 0.20)<br><br>
-<strong>Policy Maturity (45%):</strong> Board independence (3.5/5), Anti-corruption (4/5), Whistleblower (1/5 — absent), ESG remuneration linkage (1/5 — absent), Related-party disclosure (2/5).<br><br>
-<strong>Disclosure Quality (35%):</strong> Assessed against ESRS G1 — Business conduct policies (3/5), Political engagement (1/5), Payment practices (1/5), Tax transparency (1/5).<br><br>
-<strong>Regulatory Exposure (20%):</strong> EU Whistleblower Directive non-compliance (High), EU Pay Transparency Directive 2026 (Medium), CSRD G1 reporting gap (High).<br><br>
+<strong>Policy Maturity (45%):</strong> Each governance policy area — board independence, anti-corruption, whistleblower mechanism, ESG remuneration linkage and related-party disclosure — is rated 1–5 from document review.<br><br>
+<strong>Disclosure Quality (35%):</strong> Assessed against ESRS G1 across business conduct policies, political engagement, payment practices and tax transparency, each rated 1–5.<br><br>
+<strong>Regulatory Exposure (20%):</strong> Flags for exposures such as EU Whistleblower Directive non-compliance, EU Pay Transparency Directive and CSRD G1 reporting gaps, weighted by severity per company.<br><br>
 <strong>Benchmarks:</strong> ISS 2024 Proxy Guidelines, Glass Lewis 2024, ECGI board composition data, MSCI ESG Governance pillar methodology.`;
 
 // ===== METHODOLOGY PANEL =====
@@ -7899,6 +7520,28 @@ function renderRiskRegister(r) {
   // Score colour by risk level
   const scoreColor = s => s >= 75 ? 'var(--red-mid)' : s >= 55 ? 'var(--amber-mid)' : 'var(--green-mid)';
 
+  // Numeric horizon code for sorting (matches backend's horizon enum)
+  const horizonCode = h => {
+    const s = (h || '').toLowerCase();
+    if (s.includes('short')) return 1;
+    if (s.includes('long'))  return 3;
+    if (s.includes('medium')) return 2;
+    return 2;
+  };
+  // Rough €m estimate for sorting risk.financial_impact (a free-text band like "€2-5M" or "High")
+  const impactNum = s => {
+    if (!s) return 0;
+    const range = String(s).match(/([\d.]+)\s*[-–]\s*([\d.]+)\s*M/i);
+    if (range) return parseFloat(range[2]);
+    const single = String(s).match(/([\d.]+)\s*M/i);
+    if (single) return parseFloat(single[1]);
+    const q = String(s).toLowerCase();
+    if (q.includes('high')) return 50;
+    if (q.includes('moderate') || q.includes('medium')) return 15;
+    if (q.includes('low')) return 3;
+    return 0;
+  };
+
   // Sort by score descending
   const sorted = [...risks].sort((a, b) => (b.score || 0) - (a.score || 0));
 
@@ -7929,11 +7572,15 @@ function renderRiskRegister(r) {
     // Confidence label
     const confLabel = risk.confidence ? ` · Confidence: ${risk.confidence}` : '';
 
+    // Horizon / financial impact (from AI-derived risk fields)
+    const horizonLabel = risk.horizon || '—';
+    const impactLabel  = risk.financial_impact || '—';
+
     html += `
       <tr class="risk-row risk-${pillar} risk-${sevLower}"
           style="border-bottom:1px solid var(--border);cursor:pointer"
           data-score="${score}" data-pillar="${pillar}" data-severity="${sevLower}"
-          data-impact="0" data-horizon="1"
+          data-impact="${impactNum(risk.financial_impact)}" data-horizon="${horizonCode(risk.horizon)}"
           onclick="toggleRiskDetail('${rid}')">
         <td style="padding:10px 14px;text-align:center"><span style="color:var(--accent)">▼</span></td>
         <td style="padding:10px 14px;font-weight:600">${escHtml(name)}</td>
@@ -7941,8 +7588,8 @@ function renderRiskRegister(r) {
         <td style="padding:10px 14px;text-align:center">${severityBadge(sev)}</td>
         <td style="padding:10px 14px;text-align:center;font-weight:800;color:${scoreColor(score)}">${score}</td>
         <td style="padding:10px 14px;color:var(--text-secondary);font-size:12px">${escHtml(keyDriver)}</td>
-        <td style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text-muted)">—</td>
-        <td style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text-muted)">—</td>
+        <td style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text-muted)">${escHtml(horizonLabel)}</td>
+        <td style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text-muted)">${escHtml(impactLabel)}</td>
       </tr>
       <tr id="${rid}-detail" class="hidden" style="background:var(--surface-2)">
         <td colspan="8" style="padding:16px 24px">
@@ -8065,9 +7712,9 @@ function updateReportPreview(type) {
       <div style="text-align:center;border-bottom:2px solid var(--accent);padding-bottom:14px;margin-bottom:14px">
         <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">ESGIntel Platform — Confidential</div>
         <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:3px">${d.title}</div>
-        <div style="font-size:13px;color:var(--text-secondary)">VerdaSteelCo S.p.A. · June 2024</div>
+        <div style="font-size:13px;color:var(--text-secondary)">${sanitizeDemoText(((window._lastResult||{}).company||{}).name || 'Run an assessment to populate')} · ${new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div>
       </div>
-      ${d.body}
+      ${sanitizeDemoText(d.body)}
     </div>`;
   }
   // Update page count / time estimate
@@ -8078,49 +7725,15 @@ function updateReportPreview(type) {
   if (btn) { btn.textContent = '🔄 Generate Report'; btn.style.background = ''; btn.disabled = false; }
 }
 
+// Report export is intentionally DISABLED in this demo build.
+// The backend report generators still produce templated sample content rather
+// than a fully company-tailored document, so — to keep the platform honest and
+// avoid shipping a placeholder file — downloading is turned off here. The live
+// on-screen report preview above remains fully driven by the real assessment.
 async function generateReport() {
-  const btn = document.querySelector('button[onclick="generateReport()"]') || (window.event && window.event.target);
-  const type = window._currentReportType || 'full';
-  const format = window._reportFormat || 'Word (.docx)';
-  const d = reportPreviewContent[type] || reportPreviewContent.full;
-  if (btn) { btn.textContent = '⏳ Generating…'; btn.disabled = true; }
-
-  // JSON stays a quick client-side export; everything else is a real backend file.
-  if (format === 'JSON') {
-    const rawText = (document.getElementById('report-preview') || {}).innerText || '';
-    const content = JSON.stringify({ title: d.title, company: 'VerdaSteelCo S.p.A.', generated: new Date().toISOString(), previewText: rawText }, null, 2);
-    _saveBlob(new Blob([content], { type: 'application/json' }), 'VerdaSteelCo_' + d.title.replace(/[^a-z0-9]/gi,'_') + '.json');
-    _reportDone(btn); return;
-  }
-
-  let endpoint;
-  if (format === 'Excel (.xlsx)') {
-    // Report-as-spreadsheet → the ESG risk register workbook
-    endpoint = '/api/documents/engagement?file=' + encodeURIComponent('VerdaSteelCo_ESG_Risk_Register.xlsx');
-  } else {
-    const fmt = (format === 'PDF') ? 'pdf' : 'docx';
-    endpoint = '/api/documents/report?type=' + encodeURIComponent(type) + '&fmt=' + fmt;
-  }
-
-  try {
-    const res = await fetch(endpoint);
-    if (!res.ok) {
-      let msg = 'Generation failed (' + res.status + ')';
-      try { const j = await res.json(); msg = j.detail || msg; } catch (e) {}
-      throw new Error(msg);
-    }
-    const blob = await res.blob();
-    let outName = 'VerdaSteelCo_' + d.title.replace(/[^a-z0-9]/gi,'_');
-    const cd = res.headers.get('Content-Disposition') || '';
-    const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^\";]+)"?/i);
-    if (m) outName = decodeURIComponent(m[1]);
-    _saveBlob(blob, outName);
-    showToast('✅ ' + outName + ' saved to your Downloads folder');
-    _reportDone(btn);
-  } catch (err) {
-    showToast('⚠ ' + err.message);
-    if (btn) { btn.textContent = '🔄 Generate Report'; btn.disabled = false; }
-  }
+  showToast('📄 Report export is disabled in this demo build — the on-screen preview reflects your live assessment.');
+  const notice = document.getElementById('report-disabled-notice');
+  if (notice) { notice.style.display = ''; notice.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
 }
 
 function _saveBlob(blob, name) {
@@ -8135,6 +7748,47 @@ function _reportDone(btn) {
   btn.textContent = '✅ Report Downloaded';
   btn.disabled = false;
   btn.style.background = 'var(--green-mid)';
+}
+
+// ===== DEMO-TEXT SANITIZER =====
+// The DOM text-sweep in renderDynamicSections() only touches assessment PAGES.
+// Drill-down side panels (panelContent) and report/document previews are JS
+// string constants injected on demand, so they need the same treatment applied
+// at display time. This mirrors the sweep's replacements using the live result
+// company context (window._lastResult), falling back to neutral generic terms
+// when no assessment has run — so NO fabricated demo specifics are ever shown.
+function sanitizeDemoText(s) {
+  if (s == null) return s;
+  let t = String(s);
+  const co = (window._lastResult && window._lastResult.company) || {};
+  const coName = co.name || 'the company';
+  const shortName = coName.replace(/[\s,]+(S\.?p\.?A\.?|GmbH|S\.?A\.?|S\.?r\.?l\.?|Ltd\.?|Limited|Inc\.?|Corp\.?|Co\.?|PLC|AG|N\.?V\.?|AB|ASA|Oyj|Group)\.?\s*$/i, '').trim() || coName;
+  const sector = co.sector || (co.nace_code ? 'NACE ' + co.nace_code : 'the sector');
+  const repls = [
+    [/VerdaSteelCo S\.p\.A\./g, coName],
+    [/VerdaSteelCo['’]s/g, shortName + '’s'],
+    [/VerdaSteelCo/g, shortName],
+    [/VerdaSteel/g, shortName],
+    [/\b(?:SR|AR)20\d{2}(?:\s*(?:p\.?|page)\s*\.?\s*\d+(?:[–-]\d+)?)?/g, 'company disclosure'],
+    [/\bNACE\s+C24(?:\.1[0-9]?)?\b/g, sector],
+    [/\bIron\s*&(?:amp;)?\s*Steel\b/gi, sector],
+    [/\b(?:iron\s*&\s*steel|steel\s*industry|steel\s*sector|steel\s*manufacturer[s]?)\b/gi, sector],
+    [/\bBF[-\s]?BOF\b/gi, 'primary production'],
+    [/\bDRI[-/]?EAF\b/gi, 'transition technology'],
+    [/\bblast\s*furnace[-\s]?(?:basic\s*oxygen\s*furnace)?\b/gi, 'primary production process'],
+    [/\belectric\s*arc\s*furnace\b/gi, 'production equipment'],
+    [/\biron\s*ore\b/gi, 'raw materials'],
+    [/\bhydrogen[-\s]?DRI\b/gi, 'green transition technology'],
+    [/\b(?:Brescia|Taranto|Bilbao|Duisburg|Genoa|Sesto\s*San\s*Giovanni)\b/gi, 'company facilities'],
+    [/\bFondazione\s*Verda\b/g, 'the principal shareholder'],
+    [/\b842[,.]?000\s*tCO2e\b/g, 'Scope 1 emissions (not disclosed)'],
+    [/\b1[,.]?265\s*tCO2e\/€m\b/g, 'GHG intensity (not disclosed)'],
+    [/\b3[,.]?200\s*MWh\/€m\b/g, 'energy intensity (not disclosed)'],
+    [/\bSSAB\b/g, 'sector peers'],
+    [/\bH2\s*Green\s*Steel\b/g, 'green steel competitors'],
+  ];
+  repls.forEach(([rx, r]) => { t = t.replace(rx, r); });
+  return t;
 }
 
 // ===== PANEL CONTENT =====
@@ -8191,7 +7845,7 @@ const panelContent = {
 
   'soc-benchmark': null, // generated dynamically by openPanel from window._lastResult
 
-  'gov-calculations': { title: 'Governance Risk — Calculation Methodology', body: '<strong>Governance Risk Score Components</strong>\n\nGovernance scoring uses a modified framework weighted more toward policy maturity and regulatory exposure, given the qualitative nature of governance metrics:\n\nScore = (Policy_Maturity × 0.45) + (Disclosure_Quality × 0.35) + (Regulatory_Exposure × 0.20)\n\n<strong>Policy Maturity Assessment</strong>\nKey governance policies evaluated:\n• Board independence structure → rated 3.5/5 (7/9 independent, but family/PE concentration)\n• Anti-corruption / ABAC policy → rated 4/5 (policy exists, no ISO 37001)\n• Whistleblower mechanism → rated 1/5 (absent — highest risk flag)\n• Executive remuneration ESG linkage → rated 1/5 (absent)\n• Related-party transaction disclosure → rated 2/5 (incomplete)\n\n<strong>Disclosure Quality (ESRS G1 readiness)</strong>\nAssessed against ESRS G1 disclosure requirements:\n• Business conduct policies: Partially disclosed (3/5)\n• Political engagement: Not disclosed (1/5)\n• Payment practices: Not disclosed (1/5)\n• Tax transparency: Not disclosed (1/5)\n\n<strong>Regulatory Exposure</strong>\n• EU Whistleblower Directive 2019/1937 (D.Lgs. 24/2023): Non-compliant → High\n• EU Pay Transparency Directive: Impact from 2026 → Medium\n• CSRD G1 reporting gap: Material → High' },
+  'gov-calculations': { title: 'Governance Risk — Calculation Methodology', body: '<strong>Governance Risk Score Components</strong>\n\nGovernance scoring uses a modified framework weighted more toward policy maturity and regulatory exposure, given the qualitative nature of governance metrics:\n\nScore = (Policy_Maturity × 0.45) + (Disclosure_Quality × 0.35) + (Regulatory_Exposure × 0.20)\n\n<strong>Policy Maturity Assessment</strong>\nKey governance policies are each rated 1–5 from document review, for example:\n• Board independence structure (e.g. share of independent directors, ownership concentration)\n• Anti-corruption / ABAC policy (policy existence, ISO 37001 certification)\n• Whistleblower mechanism (presence of a compliant reporting channel)\n• Executive remuneration ESG linkage\n• Related-party transaction disclosure completeness\n\n<strong>Disclosure Quality (ESRS G1 readiness)</strong>\nAssessed against ESRS G1 disclosure requirements, each rated 1–5:\n• Business conduct policies\n• Political engagement\n• Payment practices\n• Tax transparency\n\n<strong>Regulatory Exposure</strong>\n• EU Whistleblower Directive 2019/1937 (D.Lgs. 24/2023)\n• EU Pay Transparency Directive (from 2026)\n• CSRD G1 reporting gaps' },
 
   'gov-benchmark': null, // generated dynamically by openPanel from window._lastResult
 };
@@ -8262,6 +7916,8 @@ function openPanel(keyOrTitle, bodyText) {
     else { title = 'Details'; body = 'Click a specific risk or metric to see methodology details.'; }
   }
 
+  title = sanitizeDemoText(title);
+  body = sanitizeDemoText(body);
   panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:15px;font-weight:700;color:var(--text-primary)">' + title + '</div><button onclick="closePanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted)">✕</button></div><div style="font-size:13px;color:var(--text-secondary);line-height:1.8;white-space:pre-line">' + body + '</div>';
   document.getElementById('overlay').classList.add('open');
   panel.classList.add('open');
@@ -8769,7 +8425,7 @@ function populateApp(r) {
     cvEl.textContent = climateAvg;
     cvEl.className = 'score-num ' + scoreColor(climateAvg);
     if (cvGauge) { cvGauge.className = 'gauge-fill ' + scoreGaugeCls(climateAvg); cvGauge.style.width = climateAvg + '%'; }
-    if (cvBadge) { cvBadge.textContent = scoreLabel(climateAvg); cvBadge.className = 'badge badge-' + (scoreColor(climateAvg) === 'red' ? 'red' : 'amber'); }
+    if (cvBadge) { cvBadge.textContent = scoreLabel(climateAvg); cvBadge.className = 'badge badge-' + (scoreColor(climateAvg) === 'red' ? 'red' : scoreColor(climateAvg) === 'amber' ? 'amber' : 'green'); }
   }
 
   // ── KPI Card 3: Material Topics ──
@@ -8973,7 +8629,9 @@ function populateApp(r) {
   const climAvgFn = arr => arr.length ? Math.round(arr.reduce((s,x) => s + x.score, 0) / arr.length) : null;
   const physAvg = climAvgFn(climPhys);
   const transAvg = climAvgFn(climTrans);
-  const climateOverall = scores.climate || (physAvg && transAvg ? Math.round((physAvg + transAvg) / 2) : null);
+  const climateOverall = scores.climate != null ? scores.climate
+    : (physAvg != null && transAvg != null) ? Math.round((physAvg + transAvg) / 2)
+    : (physAvg != null ? physAvg : transAvg);
 
   function setClimateVal(id, val, sub) {
     const el = document.getElementById(id); if (!el || val == null) return;
@@ -9060,6 +8718,9 @@ function populateApp(r) {
 
   // ── Fully dynamic E/S/G risk detail, benchmarking, KPI & policy sections ──
   try { renderRiskSections(r); } catch (e) { console.warn('renderRiskSections failed', e); }
+
+  // ── Data Completeness by Pillar — computed from real KPI availability ──
+  try { renderDataCompleteness(r); } catch (e) { console.warn('renderDataCompleteness failed', e); }
 
   // ── Risk Register: fully rebuilt from r.risks (replaces hardcoded VerdaSteelCo rows) ──
   try { renderRiskRegister(r); } catch (e) { console.warn('renderRiskRegister failed', e); }
@@ -9183,20 +8844,13 @@ function renderDynamicSections(r, name) {
   // ── C2. Materiality summary counts (from r.material_topics) ──
   const topics = Array.isArray(r.material_topics) ? r.material_topics : [];
   if (topics.length) {
-    const isDouble = t => {
-      const f = (t.financial_materiality ?? t.financial ?? 0);
-      const i = (t.impact_materiality ?? t.impact ?? 0);
-      const m = (t.materiality || t.type || '').toLowerCase();
-      return m.includes('double') || (Number(f) >= 5 && Number(i) >= 5);
-    };
-    const isFin = t => {
-      const m = (t.materiality || t.type || '').toLowerCase();
-      return m.includes('financ') && !m.includes('double');
-    };
-    const isImp = t => {
-      const m = (t.materiality || t.type || '').toLowerCase();
-      return m.includes('impact') && !m.includes('double');
-    };
+    // Classify each topic using the SAME rule as the interactive matrix dots
+    // (deriveMaterialityType), so the scoreboard counts always agree with the
+    // coloured bubbles the user sees. Reads the real schema (impact_score /
+    // financial_score, 1–5).
+    const isDouble = t => deriveMaterialityType(t) === 'double';
+    const isFin    = t => deriveMaterialityType(t) === 'financial';
+    const isImp    = t => deriveMaterialityType(t) === 'impact';
     const setCount = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     setCount('mat-count-total', topics.length);
     setCount('mat-count-double', topics.filter(isDouble).length);
@@ -9376,6 +9030,107 @@ function renderMaterialityCards(r) {
   renderMaterialityMatrix(topics);
 }
 
+// Shared materiality classifier — used by the interactive matrix, the dashboard
+// preview, AND the scoreboard counts so all three always agree.
+function deriveMaterialityType(t) {
+  const fs = Number(t.financial_score || t.financial_materiality || 0);
+  const is = Number(t.impact_score   || t.impact_materiality    || 0);
+  if (t.materiality) {
+    const m = (t.materiality + '').toLowerCase();
+    return m.includes('double') ? 'double' : m.includes('financ') ? 'financial' : 'impact';
+  }
+  return (fs >= 4 && is >= 4) ? 'double' : (fs > is ? 'financial' : 'impact');
+}
+const MATERIALITY_COLORS = { double: '#e53e3e', financial: '#3182ce', impact: '#38a169' };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// renderDashboardMatrixPreview(topics)
+// Plots a compact version of the same real topics into the Dashboard's
+// "Materiality Matrix Preview" SVG (viewBox 0 0 380 280), replacing the old
+// hardcoded demo bubbles, and updates the legend counts.
+// ─────────────────────────────────────────────────────────────────────────────
+function renderDashboardMatrixPreview(topics) {
+  const g = document.getElementById('dashboard-matrix-dots');
+  if (!g) return;
+  g.innerHTML = '';
+  const counts = { double: 0, financial: 0, impact: 0 };
+  // Plot area x: 40–360, y: 10–250 (inverted)
+  const xMin = 40, xMax = 360, yMin = 10, yMax = 250;
+  const toX = s => xMin + (Math.min(Math.max(s, 1), 5) - 1) / 4 * (xMax - xMin);
+  const toY = s => yMax - (Math.min(Math.max(s, 1), 5) - 1) / 4 * (yMax - yMin);
+  const jit = [0, 7, -7, 11, -11, 5, -5, 14, -14, 3, -3];
+  const abbr = n => { const w = (n || '').split(/[\s\/\-&]+/); return (w.length === 1 ? w[0].slice(0,4) : w.map(x => x[0] || '').join('').slice(0,4)).toUpperCase(); };
+  (topics || []).forEach((t, i) => {
+    const fs = Number(t.financial_score || t.financial_materiality || 2.5);
+    const is = Number(t.impact_score   || t.impact_materiality    || 2.5);
+    const mat = deriveMaterialityType(t);
+    counts[mat] = (counts[mat] || 0) + 1;
+    const r = 6 + ((fs + is) / 2 - 1) / 4 * 7;
+    const cx = Math.min(Math.max(toX(is) + (jit[i % jit.length] * 0.7), xMin + r), xMax - r);
+    const cy = Math.min(Math.max(toY(fs) + (jit[i % jit.length] * 0.6), yMin + r), yMax - r);
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+    c.setAttribute('fill', MATERIALITY_COLORS[mat]); c.setAttribute('opacity', '0.85');
+    c.style.cursor = 'pointer'; c.addEventListener('click', () => navigate('materiality'));
+    const tx = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tx.setAttribute('x', cx); tx.setAttribute('y', cy + 2.5); tx.setAttribute('fill', '#fff');
+    tx.setAttribute('font-size', r > 9 ? 7 : 6); tx.setAttribute('text-anchor', 'middle');
+    tx.setAttribute('font-weight', '700'); tx.setAttribute('pointer-events', 'none');
+    tx.textContent = abbr(t.topic || t.name || '');
+    g.appendChild(c); g.appendChild(tx);
+  });
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('dash-mat-double', counts.double);
+  set('dash-mat-financial', counts.financial);
+  set('dash-mat-impact', counts.impact);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// renderDataCompleteness(r)
+// Computes per-pillar data completeness from the REAL extracted KPIs
+// (each kpi carries a category + an `available` flag / value), replacing the
+// old hardcoded "Scope 1,2 available…" demo text. Percentages and the
+// available/missing descriptions now reflect what was actually found in the
+// company's documents / scraped sources — nothing fabricated.
+// ─────────────────────────────────────────────────────────────────────────────
+function renderDataCompleteness(r) {
+  const host = document.getElementById('data-completeness-pillars');
+  if (!host) return;
+  const kpis = Array.isArray(r.kpis) ? r.kpis : [];
+  const isAvail = k => (k.available === true) || (k.available == null && k.value != null && k.value !== '' && String(k.value).toLowerCase() !== 'null');
+  const pillars = [
+    { key: 'environmental', label: 'Environmental' },
+    { key: 'social',        label: 'Social' },
+    { key: 'governance',    label: 'Governance' },
+  ];
+  const rows = pillars.map(p => {
+    const items = kpis.filter(k => (k.category || '').toLowerCase().startsWith(p.key.slice(0, 3)));
+    const avail = items.filter(isAvail);
+    const missing = items.filter(k => !isAvail(k));
+    const pct = items.length ? Math.round(avail.length / items.length * 100) : 0;
+    const color = pct >= 70 ? 'green' : pct >= 40 ? 'amber' : 'red';
+    let desc;
+    if (!items.length) {
+      desc = 'No structured ' + p.label.toLowerCase() + ' metrics extracted from the provided sources';
+    } else {
+      const names = a => a.slice(0, 3).map(k => escHtml(k.metric || '')).filter(Boolean).join(', ');
+      const parts = [];
+      if (avail.length)   parts.push(names(avail) + (avail.length > 3 ? ` +${avail.length - 3} more` : '') + ' available');
+      if (missing.length) parts.push(names(missing) + (missing.length > 3 ? ` +${missing.length - 3} more` : '') + ' missing');
+      desc = parts.join(' · ');
+    }
+    return `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:13px;font-weight:600">${p.label}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--${color}-mid)">${items.length ? pct + '%' : 'n/a'}</span>
+      </div>
+      <div class="gauge-track" style="height:10px"><div class="gauge-fill gauge-fill-${color}" style="width:${pct}%"></div></div>
+      <div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">${desc}</div>
+    </div>`;
+  });
+  host.innerHTML = rows.join('');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // renderMaterialityMatrix(topics)
 // Replaces the static SVG dots with company-specific bubbles derived from
@@ -9383,6 +9138,9 @@ function renderMaterialityCards(r) {
 // Adds hover tooltips and click-to-expand interactivity.
 // ─────────────────────────────────────────────────────────────────────────────
 function renderMaterialityMatrix(topics) {
+  // Also refresh the compact dashboard preview from the same data.
+  try { renderDashboardMatrixPreview(topics); } catch (e) { console.warn('dashboard matrix preview failed', e); }
+
   const g = document.getElementById('matrix-dots');
   const svg = document.getElementById('materiality-matrix-svg');
   const tooltip = document.getElementById('mat-matrix-tooltip');
@@ -9397,14 +9155,8 @@ function renderMaterialityMatrix(topics) {
   const toY = score => yMax - (Math.min(Math.max(score, 1), 5) - 1) / 4 * (yMax - yMin);
   const toRadius = (fs, is) => 7 + ((fs + is) / 2 - 1) / 4 * 9;  // 7–16px
 
-  const deriveMat = t => {
-    const fs = Number(t.financial_score || t.financial_materiality || 0);
-    const is = Number(t.impact_score   || t.impact_materiality    || 0);
-    if (t.materiality) return (t.materiality+'').toLowerCase().includes('double') ? 'double' : (t.materiality+'').toLowerCase().includes('financ') ? 'financial' : 'impact';
-    return fs >= 4 && is >= 4 ? 'double' : fs > is ? 'financial' : 'impact';
-  };
-
-  const colors = { double: '#e53e3e', financial: '#3182ce', impact: '#38a169' };
+  const deriveMat = deriveMaterialityType;
+  const colors = MATERIALITY_COLORS;
 
   // Jitter to avoid exact overlaps (deterministic based on index)
   const jitter = (i, axis) => {

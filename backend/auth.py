@@ -54,7 +54,7 @@ JWT_SECRET     = os.getenv("JWT_SECRET", "dev-insecure-change-me")
 JWT_TTL_SECONDS = int(os.getenv("JWT_TTL_SECONDS", str(60 * 60 * 24 * 7)))  # 7 days
 CODE_TTL_SECONDS = 10 * 60                            # verification code lifetime
 CODE_MAX_ATTEMPTS = 5
-ADMIN_EMAIL    = "swikrittt@gmail.com"
+ADMIN_EMAIL    = os.getenv("ADMIN_EMAIL", "")
 
 # SMTP (email delivery)
 SMTP_HOST      = os.getenv("SMTP_HOST", "smtp.gmail.com")
@@ -549,7 +549,7 @@ async def google_callback(request: Request):
     _oauth_state.pop(state, None)
 
     if qp.get("mock") == "1" or not GOOGLE_LIVE:
-        row = upsert_oauth_user("swikrittt@gmail.com", "Swikrit Sharma",
+        row = upsert_oauth_user("demo@example.com", "Demo User",
                                 "google", photo_url="")
         return _redirect_success(row, "google")
 
@@ -620,8 +620,8 @@ async def x_callback(request: Request):
         return _redirect_error("Invalid OAuth state. Please try again.")
 
     if qp.get("mock") == "1" or not X_LIVE:
-        row = upsert_oauth_user("swikrittt@gmail.com", "Swikrit Sharma",
-                                "x", x_handle="@swikrit")
+        row = upsert_oauth_user("demo@example.com", "Demo User",
+                                "x", x_handle="@demo_user")
         return _redirect_success(row, "x")
 
     code = qp.get("code")

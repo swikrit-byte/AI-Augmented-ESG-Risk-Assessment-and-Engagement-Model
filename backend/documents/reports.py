@@ -647,7 +647,7 @@ def _exec_summary_text(doc: Document) -> None:
         f"quantifiable financial consequences within the investment horizon.", size=10)
     _add_body(doc,
         "CLIMATE & CARBON (highest priority): With 842,000 tCO2e Scope 1 on a BF-BOF process route, "
-        f"{D.COMPANY['short']} faces €68M/yr in net ETS costs by 2030 under the Orderly scenario, plus €18-28M "
+        f"{cd.COMPANY['short']} faces €68M/yr in net ETS costs by 2030 under the Orderly scenario, plus €18-28M "
         "additional CBAM exposure on non-EU exports. No internal carbon price, no SBTi commitment, and "
         "no DRI/EAF transition plan are in place. Asset stranding of the primary route is a credible "
         "risk by 2032-2035.", size=10, space_after=6)
@@ -679,7 +679,7 @@ def _kpi_section(doc: Document, pillar: str) -> None:
     kpis   = [k for k in cd.KPIS if k["group"] in groups]
     if not kpis:
         return
-    headers = ["Metric", "Group", f"{D.COMPANY['short']}", "Peer Median", "Peer Pctl", "Signal"]
+    headers = ["Metric", "Group", f"{cd.COMPANY['short']}", "Peer Median", "Peer Pctl", "Signal"]
     widths  = [4.0, 2.6, 2.8, 2.8, 2.0, 2.3]
     tbl = doc.add_table(rows=1, cols=6)
     tbl.style = "Table Grid"
@@ -836,7 +836,7 @@ def _build_full_docx(out_path: str, tmpdir: str) -> None:
 
     # ── Environmental ──────────────────────────────────────────────────────
     _pillar_analysis(doc, "Environmental",
-        (f"The Environmental pillar is the primary driver of ESG risk. {D.COMPANY['short']}'s 100% BF-BOF "
+        (f"The Environmental pillar is the primary driver of ESG risk. {cd.COMPANY['short']}'s 100% BF-BOF "
          "primary route generates 842,000 tCO2e Scope 1 annually — P89 vs sector peers — against a "
          "rising EU ETS price and a rapidly tapering free-allocation schedule (≈40% today → 10% by "
          "2030). No internal carbon price, no ETS hedging, and no SBTi commitment are in place. "
@@ -862,7 +862,7 @@ def _build_full_docx(out_path: str, tmpdir: str) -> None:
          "immediately remediable at low cost: no whistleblower mechanism (in breach of EU Directive "
          "2019/1937 since December 2021) and no ESG linkage in executive pay. Board independence "
          "at 78% (7 of 9) is above the peer median. CSRD readiness is the single largest "
-         f"governance programme risk: as a large PIE, {D.COMPANY['short']} must publish a first ESRS-"
+         f"governance programme risk: as a large PIE, {cd.COMPANY['short']} must publish a first ESRS-"
          "compliant report for FY2025 in Q1 2026, less than 18 months away. The double-materiality "
          "assessment is immature and the ESRS E1 transition plan is absent."),
         tmpdir, chart_group="Governance")
@@ -977,7 +977,7 @@ def _build_full_docx(out_path: str, tmpdir: str) -> None:
     # ── Engagement Asks ──────────────────────────────────────────────────
     _add_heading(doc, "Prioritised Engagement Asks", level=1, page_break_before=True)
     _add_body(doc,
-        f"The following engagement asks are recommended to the Board of {D.COMPANY['short']} S.p.A. "
+        f"The following engagement asks are recommended to the Board of {cd.COMPANY['short']} S.p.A. "
         "in order of priority. Critical and Immediate items should be commenced within 60 days.")
     _engagement_asks_table(doc)
 
@@ -1014,7 +1014,7 @@ def _build_climate_docx(out_path: str, tmpdir: str) -> None:
     # Governance
     _add_heading(doc, "1. Governance", level=1)
     _add_body(doc,
-        f"{D.COMPANY['short']}'s Board retains ultimate oversight of climate risk through its Risk Committee, "
+        f"{cd.COMPANY['short']}'s Board retains ultimate oversight of climate risk through its Risk Committee, "
         "which meets quarterly. However, no Board-level climate expertise is formally disclosed, "
         "the Chief Sustainability Officer has no direct Board reporting line, and climate performance "
         "is not linked to executive remuneration. These structural gaps limit the Board's ability to "
@@ -1023,7 +1023,7 @@ def _build_climate_docx(out_path: str, tmpdir: str) -> None:
     # Strategy
     _add_heading(doc, "2. Strategy", level=1)
     _add_body(doc,
-        f"{D.COMPANY['short']}'s 100% BF-BOF primary steel route generates 842 ktCO2e Scope 1 per annum "
+        f"{cd.COMPANY['short']}'s 100% BF-BOF primary steel route generates 842 ktCO2e Scope 1 per annum "
         "— a carbon intensity of approximately 0.73 tCO2e per €k revenue. The Company has not "
         "published a climate transition plan, committed to an SBTi pathway, or set renewable energy "
         "targets. Against the backdrop of three materially different climate scenarios (see Section 4), "
@@ -1604,7 +1604,7 @@ def build_report(report_type: str, fmt: str, out_dir: str) -> str:
 
     title   = cd.REPORT_TYPES[report_type]
     safe_t  = cd.slug(title).replace("_", " ").title().replace(" ", "_")
-    fname   = f"{D.COMPANY['short'].replace(' ', '_')}_{safe_t}.{fmt}"
+    fname   = f"{cd.COMPANY['short'].replace(' ', '_')}_{safe_t}.{fmt}"
     out_path = os.path.join(out_dir, fname)
 
     tmpdir = tempfile.mkdtemp(prefix="esgIntel_charts_")

@@ -49,7 +49,7 @@ With no credentials set, everything still works so you can demo the full flow:
 - **Email codes**: instead of sending an email, the 6-digit code is printed in
   the server console **and** shown on the verification screen (orange box).
 - **Google / X buttons**: skip the real provider and sign you in as a demo user
-  (`swikrittt@gmail.com`), so you can see the post-login redirect end-to-end.
+  (`demo@example.com`), so you can see the post-login redirect end-to-end.
 
 ## Going live
 
@@ -118,5 +118,5 @@ Google and X consoles.
 - X does not reliably expose a user's email, so X accounts are stored with a
   stable internal identifier and flagged `x_verified = 1`.
 - User records live in `backend/esg_intel.db` (tables `users`, `email_codes`).
-  The existing admin dashboard email (`swikrittt@gmail.com`) is auto-flagged as
-  admin on login.
+  The account whose email matches the `ADMIN_EMAIL` environment variable
+  (see `.env`) is auto-flagged as admin on login.

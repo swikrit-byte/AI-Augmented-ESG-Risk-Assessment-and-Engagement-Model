@@ -2,7 +2,7 @@
 ESGIntel — Policy Document Generator
 =====================================
 Produces fully-developed, McKinsey-style company policy documents (.docx) for
-the demo company {D.COMPANY['short']} S.p.A.
+the demo company {cd.COMPANY['short']} S.p.A.
 
 Public contract:
     build_policy(key: str, out_dir: str) -> str
@@ -615,7 +615,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
     # ── Section 1: Purpose & Scope ──────────────────────────────────────────
     _add_heading(doc, "1.  Purpose & Scope", level=1)
     _add_body(doc, (
-        f"{C['name']} ('{D.COMPANY['short']}' or 'the Company') is a primary steel "
+        f"{C['name']} ('{cd.COMPANY['short']}' or 'the Company') is a primary steel "
         f"manufacturer (NACE C24) operating across Italy and Spain with approximately "
         f"{C['employees']:,} employees and €{C['revenue_eur_bn']:.2f}bn in annual revenue. "
         f"Our operations — from iron-ore procurement in Brazil and mineral sourcing from "
@@ -623,7 +623,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
         f"and Bilbao — span complex global value chains with material human rights exposure."
     ), space_after=6)
     _add_body(doc, (
-        f"This Policy establishes {D.COMPANY['short']}'s commitment to respecting human rights across "
+        f"This Policy establishes {cd.COMPANY['short']}'s commitment to respecting human rights across "
         "all business activities and relationships. It reflects the Company's responsibility "
         "under internationally recognised frameworks and forms the foundation for our ongoing "
         "Human Rights Due Diligence (HRDD) programme."
@@ -650,7 +650,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
     _add_heading(doc, "2.  Policy Commitment Statement", level=1,
                  page_break_before=True)
     _add_body(doc, (
-        f"{D.COMPANY['short']} is committed to:"
+        f"{cd.COMPANY['short']} is committed to:"
     ), space_after=4)
     commitments = [
         "Respecting all internationally recognised human rights as articulated in the "
@@ -695,7 +695,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
          "Active", "Non-financial information disclosure for large PIEs."),
     ]
     _add_heading(doc, "Regulatory & Framework Reference Table", level=3, space_before=6)
-    headers = ["Framework", "Timeline / Status", f"Key Requirement for {D.COMPANY['short']}"]
+    headers = ["Framework", "Timeline / Status", f"Key Requirement for {cd.COMPANY['short']}"]
     widths  = [5.0, 3.5, 7.5]
     tbl     = _make_table(doc, headers, widths)
     for i, row in enumerate(fw_rows):
@@ -707,7 +707,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
                  page_break_before=True)
     _add_body(doc, (
         "Based on our preliminary Human Rights Impact Assessment and value-chain risk mapping, "
-        f"the following salient human rights issues have been identified for {D.COMPANY['short']}:"
+        f"the following salient human rights issues have been identified for {cd.COMPANY['short']}:"
     ), space_after=6)
 
     salient_rows = [
@@ -737,7 +737,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
          "Employee monitoring systems; contractor data in digital procurement platforms.",
          "GDPR data processing review; privacy impact assessments for new systems."),
     ]
-    headers = ["Severity", "Issue", f"{D.COMPANY['short']} Risk Context", "Key Mitigation Action"]
+    headers = ["Severity", "Issue", f"{cd.COMPANY['short']} Risk Context", "Key Mitigation Action"]
     widths  = [2.0, 3.2, 5.4, 5.4]
     tbl     = _make_table(doc, headers, widths)
     sev_fills = {"HIGH": "FAD7D4", "MEDIUM": "FEF9E7", "LOWER": "D5F5E3"}
@@ -762,7 +762,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
     _add_heading(doc, "5.  Human Rights Due Diligence Process", level=1,
                  page_break_before=True)
     _add_body(doc, (
-        f"{D.COMPANY['short']}'s HRDD process follows the five-step cycle mandated by the UNGPs and "
+        f"{cd.COMPANY['short']}'s HRDD process follows the five-step cycle mandated by the UNGPs and "
         "operationalised under the CSDDD. The process applies to own operations and "
         "extends to the value chain on a risk-proportionate basis."
     ), space_after=6)
@@ -811,7 +811,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
                  page_break_before=True)
     _add_body(doc, (
         "All Tier-1 suppliers and high-risk Tier-2 suppliers must acknowledge and comply with "
-        f"{D.COMPANY['short']}'s Supplier Code of Conduct (CoC) as a condition of doing business. "
+        f"{cd.COMPANY['short']}'s Supplier Code of Conduct (CoC) as a condition of doing business. "
         "The following minimum standards are non-negotiable:"
     ), space_after=6)
 
@@ -844,7 +844,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
          "REQUIRED — Zero tolerance for bribery, corruption, facilitation payments. Comply with local law and FCPA/UK Bribery Act principles.",
          "Certification; reference-check for high-risk geographies."),
         ("Grievance Mechanism",
-         f"REQUIRED — Suppliers to provide workers with access to an effective grievance mechanism free from retaliation. Notify {D.COMPANY['short']} of any material grievance relating to our supply.",
+         f"REQUIRED — Suppliers to provide workers with access to an effective grievance mechanism free from retaliation. Notify {cd.COMPANY['short']} of any material grievance relating to our supply.",
          "SAQ; verification during audit; incident reporting requirement in contracts."),
     ]
     headers = ["CoC Requirement", "Standard / Prohibition", "Verification Method"]
@@ -859,7 +859,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
         ("Tier 1 — All suppliers",    "Self-Assessment Questionnaire (SAQ) completion; annual recertification."),
         ("Tier 1 — High-risk",        "Third-party social audit (SMETA 4-Pillar or equivalent) within 24 months of onboarding."),
         ("Tier 2 — High-risk (DRC / Brazil)", "Enhanced HRDD: site visits, worker interviews, conflict-minerals traceability (OECD DD Guidance for Minerals)."),
-        ("Breach — Remedial",         f"Corrective Action Plan (CAP) required within 30 days; {D.COMPANY['short']} support provided; 90-day resolution target."),
+        ("Breach — Remedial",         f"Corrective Action Plan (CAP) required within 30 days; {cd.COMPANY['short']} support provided; 90-day resolution target."),
         ("Breach — Termination",      "Persistent or severe breach (e.g., forced/child labour confirmed) → suspension pending investigation → termination with 30-day notice."),
     ]
     headers = ["Tier / Scenario", "Engagement Action"]
@@ -873,7 +873,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
     _add_heading(doc, "7.  Grievance Mechanism", level=1,
                  page_break_before=True)
     _add_body(doc, (
-        f"{D.COMPANY['short']} is committed to providing access to effective, legitimate, and impartial "
+        f"{cd.COMPANY['short']} is committed to providing access to effective, legitimate, and impartial "
         "grievance mechanisms for all those potentially affected by our human rights impacts, "
         "in line with UNGP Principle 29–31."
     ), space_after=6)
@@ -916,7 +916,7 @@ def _build_human_rights(out_dir: str, tmpdir: str) -> str:
     _add_callout(
         doc,
         text=(
-            f"{D.COMPANY['short']} strictly prohibits any form of retaliation — dismissal, demotion, "
+            f"{cd.COMPANY['short']} strictly prohibits any form of retaliation — dismissal, demotion, "
             "harassment, disadvantage, or discriminatory treatment — against any person who raises "
             "a concern in good faith. This protection extends to employees, contractors, suppliers, "
             "community members, and third parties. Violations of this principle will be treated as "
@@ -1124,7 +1124,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
             f"{risk_gov01['summary']}  "
             f"EU Directive 2019/1937 required transposition by 17 December 2021; "
             f"Italy enacted D.Lgs. 24/2023 (effective 17 July 2023, mandatory for companies "
-            f"with 50+ employees). {D.COMPANY['short']} ({C['employees']:,} employees) is an outlier "
+            f"with 50+ employees). {cd.COMPANY['short']} ({C['employees']:,} employees) is an outlier "
             f"vs all sector peers and faces regulatory and reputational sanctions.  "
             f"Action: Deploy this Policy and a confidential reporting channel within 60 days."
         ),
@@ -1139,7 +1139,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
     # ── Section 1: Purpose ──────────────────────────────────────────────────
     _add_heading(doc, "1.  Purpose", level=1)
     _add_body(doc, (
-        f"{C['name']} ('{D.COMPANY['short']}' or 'the Company') is committed to the highest standards "
+        f"{C['name']} ('{cd.COMPANY['short']}' or 'the Company') is committed to the highest standards "
         f"of ethical conduct, legal compliance, and corporate integrity. This Whistleblower / "
         f"Speak-Up Policy ('Policy') establishes a clear, safe, and confidential framework "
         f"through which any person may report actual or suspected violations of law, "
@@ -1166,14 +1166,14 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
     ), space_after=4)
 
     scope_rows = [
-        ("Employees", f"All permanent, fixed-term, part-time, and apprenticeship employees across all {D.COMPANY['short']} entities (Italy and Spain)."),
-        ("Temporary & Agency Workers", f"All temporary, agency, and seconded staff performing work for or at {D.COMPANY['short']}."),
-        ("Contractors & Sub-contractors", f"All individuals performing work under contract (including sole traders and freelancers) for {D.COMPANY['short']}."),
-        ("Suppliers & Business Partners", f"Persons working within the supply chain who have become aware of breaches in the context of their business relationship with {D.COMPANY['short']}."),
+        ("Employees", f"All permanent, fixed-term, part-time, and apprenticeship employees across all {cd.COMPANY['short']} entities (Italy and Spain)."),
+        ("Temporary & Agency Workers", f"All temporary, agency, and seconded staff performing work for or at {cd.COMPANY['short']}."),
+        ("Contractors & Sub-contractors", f"All individuals performing work under contract (including sole traders and freelancers) for {cd.COMPANY['short']}."),
+        ("Suppliers & Business Partners", f"Persons working within the supply chain who have become aware of breaches in the context of their business relationship with {cd.COMPANY['short']}."),
         ("Former Employees", "Persons who raise concerns about matters that arose during their employment, including those already dismissed."),
         ("Job Applicants", "Candidates who become aware of potential violations during a recruitment process."),
         ("Shareholders & Board Members", "Directors, board members, shareholders, and members of supervisory bodies."),
-        ("Civil Society / Third Parties", f"NGOs, journalists, and community members with credible information about violations connected to {D.COMPANY['short']}'s activities."),
+        ("Civil Society / Third Parties", f"NGOs, journalists, and community members with credible information about violations connected to {cd.COMPANY['short']}'s activities."),
     ]
     headers = ["Who", "Description"]
     widths  = [4.0, 12.0]
@@ -1199,7 +1199,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
         ("Competition Law",         "Price-fixing, market allocation, bid-rigging, abuse of dominant position (Art. 101/102 TFEU; Italian Competition Act)."),
         ("Product Safety",          "Falsification of product quality certifications; supply of non-conforming steel products; safety data falsification."),
         ("Public Procurement",      "Corruption or irregularity in public procurement processes."),
-        ("Other Regulatory Violations", f"Any breach of applicable law, regulation, or {D.COMPANY['short']} Code of Ethics / Conduct."),
+        ("Other Regulatory Violations", f"Any breach of applicable law, regulation, or {cd.COMPANY['short']} Code of Ethics / Conduct."),
     ]
     headers = ["Category", "Examples"]
     widths  = [3.5, 12.5]
@@ -1240,7 +1240,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
     _add_heading(doc, "4.  Reporting Channels", level=1,
                  page_break_before=True)
     _add_body(doc, (
-        f"{D.COMPANY['short']} provides multiple independent, accessible, and confidential reporting "
+        f"{cd.COMPANY['short']} provides multiple independent, accessible, and confidential reporting "
         "channels. Reporters may use any channel; anonymous reporting is permitted and protected."
     ), space_after=6)
 
@@ -1276,7 +1276,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
         text=(
             "Reporter's choice of channel is absolute — you may use any channel listed above. "
             "You are not required to report internally before going to ANAC or another external "
-            f"authority. {D.COMPANY['short']} strongly encourages internal reporting first as it often "
+            f"authority. {cd.COMPANY['short']} strongly encourages internal reporting first as it often "
             "leads to faster resolution, but this is never a prerequisite."
         ),
         label="REPORTER'S RIGHTS",
@@ -1289,7 +1289,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
     _add_heading(doc, "5.  Confidentiality & Data Protection (GDPR)", level=1,
                  page_break_before=True)
     _add_body(doc, (
-        f"{D.COMPANY['short']} treats all reports and the identity of reporters with the utmost "
+        f"{cd.COMPANY['short']} treats all reports and the identity of reporters with the utmost "
         "confidentiality. Personal data processed in connection with whistleblowing reports "
         "is handled in strict compliance with the EU General Data Protection Regulation "
         "(GDPR) 2016/679 and Italian D.Lgs. 196/2003."
@@ -1331,7 +1331,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
     _add_callout(
         doc,
         text=(
-            f"{D.COMPANY['short']} ABSOLUTELY PROHIBITS any form of retaliation against any person "
+            f"{cd.COMPANY['short']} ABSOLUTELY PROHIBITS any form of retaliation against any person "
             "who makes a report in good faith under this Policy, regardless of the outcome of "
             "the investigation. This prohibition applies to all persons within the scope of "
             "this Policy, including managers, supervisors, directors, and the Company itself."
@@ -1449,7 +1449,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
     # ── Section 9: Record-Keeping ────────────────────────────────────────────
     _add_heading(doc, "9.  Record-Keeping", level=1)
     _add_body(doc, (
-        f"{D.COMPANY['short']} maintains a secure, confidential case management system for all "
+        f"{cd.COMPANY['short']} maintains a secure, confidential case management system for all "
         "whistleblowing reports. Access is restricted to the Compliance Officer, General Counsel, "
         "and, on a strictly need-to-know basis, designated investigators."
     ), space_after=6)
@@ -1556,7 +1556,7 @@ def _build_whistleblower(out_dir: str, tmpdir: str) -> str:
         "Note: This document was prepared with AI assistance via the ESGIntel platform. "
         "It constitutes a substantive draft only. Review by qualified Italian and EU legal counsel "
         "is required prior to adoption, given the specific requirements of D.Lgs. 24/2023 "
-        f"and the operational specifics of {D.COMPANY['short']}."
+        f"and the operational specifics of {cd.COMPANY['short']}."
     ), italic=True, color_key="muted", size=9, space_after=6)
 
     # ── Footer ──────────────────────────────────────────────────────────────

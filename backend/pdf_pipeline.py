@@ -34,7 +34,10 @@ OPUS_MODEL   = "claude-opus-4-8"
 HAIKU_MODEL  = "claude-haiku-4-5-20251001"
 MAX_PDFS     = 8          # max PDFs to analyze per company
 CHARS_PER_PDF = 150_000   # chars extracted from each PDF (full doc)
-MAX_PAGES_PER_PDF = 150   # pdfplumber page cap per document
+MAX_PAGES_PER_PDF = 200   # page cap per document (raised for large bank reports)
+MIN_PDF_BYTES = 20_000            # ignore tiny/placeholder files (<20 KB)
+MAX_PDF_BYTES = 40 * 1024 * 1024  # accept reports up to 40 MB (banks' integrated reports are large; well above the 10 MB floor)
+MIN_EXTRACT_CHARS = 800           # a real report yields far more than this once parsed
 
 # Keywords that indicate a relevant ESG/annual report link
 REPORT_KEYWORDS = [
@@ -80,19 +83,51 @@ TARGET_YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019]
 # ──────────────────────────────────────────────────────────────
 # PDF TEXT EXTRACTION
 # ──────────────────────────────────────────────────────────────
+def _extract_with_pypdf(content: bytes, max_pages: int) -> str:
+    """Fast, tolerant fallback extractor. pypdf handles many large/complex bank
+    PDFs that pdfplumber returns empty on or chokes/times-out reading."""
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(content))
+        parts = []
+        for i, page in enumerate(reader.pages[:max_pages]):
+            try:
+                t = page.extract_text() or ""
+            except Exception:
+                t = ""
+            if t.strip():
+                parts.append(f"[Page {i+1}]\n{t}")
+        return "\n\n".join(parts)
+    except Exception:
+        return ""
+
+
 def extract_pdf_text(content: bytes, max_pages: int = MAX_PAGES_PER_PDF) -> str:
-    """Extract text from PDF bytes using pdfplumber. Returns up to max_pages."""
+    """Extract text from PDF bytes. Tries pdfplumber (higher quality) first, then
+    falls back to pypdf if pdfplumber errors or returns too little text — large
+    bank/annual reports frequently need the fallback."""
+    plumber_text = ""
     try:
         with pdfplumber.open(io.BytesIO(content)) as pdf:
             pages = pdf.pages[:max_pages]
             parts = []
             for i, page in enumerate(pages):
-                text = page.extract_text() or ""
+                try:
+                    text = page.extract_text() or ""
+                except Exception:
+                    text = ""
                 if text.strip():
                     parts.append(f"[Page {i+1}]\n{text}")
-            return "\n\n".join(parts)
-    except Exception as e:
-        return f"[PDF extraction failed: {e}]"
+            plumber_text = "\n\n".join(parts)
+    except Exception:
+        plumber_text = ""
+
+    # Fall back to pypdf when pdfplumber produced little/nothing.
+    if len(plumber_text) < MIN_EXTRACT_CHARS:
+        pypdf_text = _extract_with_pypdf(content, max_pages)
+        if len(pypdf_text) > len(plumber_text):
+            return pypdf_text
+    return plumber_text
 
 
 # ──────────────────────────────────────────────────────────────
@@ -367,11 +402,97 @@ async def _claude_web_search_for_reports(
 # ──────────────────────────────────────────────────────────────
 # AGENT 1: DISCOVERY
 # ──────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# JS-GATED PAGE SUPPORT (Tracks C & D)
+# The static crawler only sees <a href> links BeautifulSoup can parse. Many
+# corporate report portals are JS-rendered SPAs where the PDF URLs live in
+# inline JSON/JS state or are only listed in the sitemap. These two helpers add
+# coverage for those cases — with NO headless browser and NO API cost.
+# ──────────────────────────────────────────────────────────────
+_ABS_PDF_RE   = re.compile(r'https?://[^\s"\'<>()\\]+?\.pdf(?:\?[^\s"\'<>()\\]*)?', re.I)
+_REL_PDF_RE   = re.compile(r'''["'(](/[^\s"'<>()\\]+?\.pdf(?:\?[^\s"'<>()\\]*)?)["')]''', re.I)
+
+def _extract_pdf_urls_from_raw_html(html: str, base_url: str) -> set[str]:
+    """Track D — raw-HTML deep scan. Finds every .pdf URL anywhere in the page
+    source, including inside inline <script> JSON/JS state (Next.js __NEXT_DATA__,
+    Nuxt payloads, etc.) and data-* attributes — the PDF links a JS-gated SPA
+    references but never exposes as a plain <a href> for BeautifulSoup to find."""
+    if not html:
+        return set()
+    base = base_url.rstrip("/")
+    urls: set[str] = set()
+    for m in _ABS_PDF_RE.findall(html):
+        urls.add(m.replace("\\/", "/"))
+    for m in _REL_PDF_RE.findall(html):
+        p = m.replace("\\/", "/")
+        urls.add(p if p.startswith("http") else base + "/" + p.lstrip("/"))
+    return urls
+
+
+async def _discover_via_sitemap(base_url: str, client: httpx.AsyncClient) -> dict[str, str]:
+    """Track C — sitemap discovery. Reads robots.txt Sitemap: directives + common
+    sitemap paths, walks sitemap indexes, and collects report-looking .pdf asset
+    URLs. Works on JS-gated sites because the sitemap lists the real asset URLs
+    regardless of how the page renders them."""
+    base = base_url.rstrip("/")
+    found: dict[str, str] = {}
+    sitemap_urls: list[str] = []
+
+    # robots.txt Sitemap: directives
+    try:
+        r = await client.get(base + "/robots.txt", timeout=10, follow_redirects=True)
+        if r.status_code == 200:
+            for line in r.text.splitlines():
+                if line.lower().startswith("sitemap:"):
+                    sitemap_urls.append(line.split(":", 1)[1].strip())
+    except Exception:
+        pass
+    # common sitemap locations
+    for p in ("/sitemap.xml", "/sitemap_index.xml", "/sitemap-index.xml", "/sitemap/sitemap.xml"):
+        if base + p not in sitemap_urls:
+            sitemap_urls.append(base + p)
+
+    seen: set[str] = set()
+
+    def _is_report_pdf(u: str) -> bool:
+        ul = u.lower()
+        if not (ul.endswith(".pdf") or ".pdf?" in ul):
+            return False
+        if any(k in ul for k in ["sustainab", "annual", "esg", "integrated", "climate",
+                                  "tcfd", "csr", "responsib", "report", "rapport",
+                                  "baerekraft", "hallbarhet", "nachhaltig"]):
+            return True
+        return any(str(y) in ul for y in TARGET_YEARS)
+
+    async def _walk(u: str, depth: int = 0):
+        if u in seen or depth > 2 or len(found) > 60:
+            return
+        seen.add(u)
+        try:
+            r = await client.get(u, timeout=12, follow_redirects=True)
+            if r.status_code != 200:
+                return
+            xml = r.text
+            for loc in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", xml, re.I):
+                ll = loc.lower()
+                if ll.endswith(".xml") or "sitemap" in ll and ll.endswith((".xml", ".gz")):
+                    await _walk(loc, depth + 1)
+                elif _is_report_pdf(loc):
+                    found[loc] = "sitemap"
+        except Exception:
+            pass
+
+    for u in sitemap_urls[:6]:
+        await _walk(u)
+    return found
+
+
 async def discover_report_pdfs(
     base_url: str,
     client: httpx.AsyncClient,
     company_name: str = "",
     seed_urls: Optional[dict[str, str]] = None,
+    log_fn=None,
 ) -> list[dict]:
     """
     Crawl the company website to find PDF annual/sustainability reports.
@@ -459,6 +580,12 @@ async def discover_report_pdfs(
                          for kw in ["report", "download", "publication", "investor", "sustainability", "annual"]):
                     if abs_href.startswith(base_url) or any(d in abs_href for d in [base_url.split("//")[-1].split("/")[0]]):
                         secondary_pages.add(abs_href)
+            # Track D — raw-HTML deep scan (catches PDFs in inline JS/JSON on JS-gated pages)
+            page_is_report = _is_report_page(page_url)
+            for pdf_url in _extract_pdf_urls_from_raw_html(html, base_url):
+                pl = pdf_url.lower()
+                if page_is_report or any(kw in pl for kw in REPORT_KEYWORDS) or any(str(y) in pl for y in TARGET_YEARS):
+                    found_pdfs.setdefault(pdf_url, "report (js-page)")
         except Exception:
             pass
 
@@ -478,8 +605,23 @@ async def discover_report_pdfs(
                 anchor = a.get_text(" ", strip=True)
                 if href and _is_report_link(href, anchor, page_is_report_page=page_ctx):
                     found_pdfs[_abs(href)] = anchor
+            # Track D — raw-HTML deep scan on secondary (report/investor) pages too
+            for pdf_url in _extract_pdf_urls_from_raw_html(html, base_url):
+                pl = pdf_url.lower()
+                if page_ctx or any(kw in pl for kw in REPORT_KEYWORDS) or any(str(y) in pl for y in TARGET_YEARS):
+                    found_pdfs.setdefault(pdf_url, "report (js-page)")
         except Exception:
             pass
+
+    # ── Step 3b: Track C — sitemap discovery (JS-gated sites list assets here) ──
+    try:
+        sitemap_pdfs = await _discover_via_sitemap(base_url, client)
+        for u, tag in sitemap_pdfs.items():
+            found_pdfs.setdefault(u, tag)
+        if log_fn and sitemap_pdfs:
+            log_fn(f"Sitemap discovery found {len(sitemap_pdfs)} report PDF candidate(s)")
+    except Exception:
+        pass
 
     # ── Step 4: year-extrapolation — generate year variants from found URLs ──
     year_variants = _extrapolate_year_variants(found_pdfs)
@@ -536,33 +678,64 @@ async def discover_report_pdfs(
 
     ranked = sorted(found_pdfs.items(), key=lambda kv: _score_pdf(kv[0], kv[1]), reverse=True)
 
+    # Per-candidate diagnostics so we can see WHY a report was/wasn't used
+    diag: list[dict] = []
+
     async def _download(url: str, anchor: str) -> Optional[dict]:
+        fname = url.split("/")[-1].split("?")[0] or "report.pdf"
         try:
-            r = await client.get(url, timeout=40, follow_redirects=True)
-            if r.status_code == 200 and len(r.content) > 20_000:
-                ct = r.headers.get("content-type", "")
-                if "pdf" not in ct.lower() and not url.lower().endswith(".pdf"):
-                    return None
-                text = extract_pdf_text(r.content)
-                if len(text) < 800:
-                    return None
-                filename = url.split("/")[-1].split("?")[0] or "report.pdf"
-                return {
-                    "url": url,
-                    "anchor": anchor,
-                    "filename": filename,
-                    "size_bytes": len(r.content),
-                    "text": text[:CHARS_PER_PDF],
-                    "_text_len": len(text),
-                }
-        except Exception:
-            pass
+            r = await client.get(url, timeout=60, follow_redirects=True)
+            if r.status_code != 200:
+                diag.append({"file": fname, "ok": False, "reason": f"HTTP {r.status_code}"})
+                return None
+            size = len(r.content)
+            ct = r.headers.get("content-type", "")
+            if "pdf" not in ct.lower() and not url.lower().endswith(".pdf"):
+                # A "report" URL that returns HTML is a landing page, not the PDF itself.
+                diag.append({"file": fname, "ok": False, "reason": f"not a PDF (content-type {ct[:30] or 'unknown'})"})
+                return None
+            if size < MIN_PDF_BYTES:
+                diag.append({"file": fname, "ok": False, "reason": f"too small ({size} bytes)"})
+                return None
+            if size > MAX_PDF_BYTES:
+                diag.append({"file": fname, "ok": False, "reason": f"too large ({size // (1024*1024)} MB > {MAX_PDF_BYTES // (1024*1024)} MB cap)"})
+                return None
+            text = extract_pdf_text(r.content)
+            if len(text) < MIN_EXTRACT_CHARS:
+                diag.append({"file": fname, "ok": False, "reason": f"no extractable text ({len(text)} chars — likely scanned/secured PDF)"})
+                return None
+            diag.append({"file": fname, "ok": True, "size_mb": round(size / (1024*1024), 1), "chars": len(text)})
+            return {
+                "url": url,
+                "anchor": anchor,
+                "filename": fname,
+                "size_bytes": size,
+                "text": text[:CHARS_PER_PDF],
+                "_text_len": len(text),
+            }
+        except Exception as e:
+            diag.append({"file": fname, "ok": False, "reason": f"{type(e).__name__}: {str(e)[:40]}"})
         return None
 
     # Download candidates in batches — try more candidates since many AI URLs may 404
     download_tasks = [_download(url, anchor) for url, anchor in ranked[:MAX_PDFS * 4]]
     dl_results = await asyncio.gather(*download_tasks)
     valid = [r for r in dl_results if r]
+
+    # ── Diagnostic summary — surfaces exactly why reports were/weren't used ──
+    if log_fn:
+        ok = [d for d in diag if d.get("ok")]
+        bad = [d for d in diag if not d.get("ok")]
+        if ok:
+            log_fn("Report text extracted from: " + "; ".join(f"{d['file']} ({d.get('size_mb','?')} MB, {d.get('chars',0):,} chars)" for d in ok[:6]))
+        if bad and not ok:
+            # Only surface failures prominently when NOTHING succeeded (the real problem case)
+            reasons = "; ".join(f"{d['file']}: {d['reason']}" for d in bad[:6])
+            log_fn(f"⚠ {len(bad)} candidate report(s) found but none usable — {reasons}", done=True)
+        elif bad:
+            log_fn(f"({len(bad)} other candidate(s) skipped: " + "; ".join(sorted({d['reason'] for d in bad}))[:120] + ")")
+    # Expose diagnostics to the caller for storage in the result
+    discover_report_pdfs.last_diag = diag
 
     # De-duplicate by filename (same report downloaded from two URL variants)
     seen_fnames: set[str] = set()
@@ -1097,6 +1270,162 @@ def enrich_analysis(result: dict, pdf_intel: dict) -> dict:
 
 
 # ──────────────────────────────────────────────────────────────
+# DATA VALIDATION — pre-run KPI review rows (feeds POST /api/validate)
+# ──────────────────────────────────────────────────────────────
+# Maps the frontend KPI label -> nested field path inside a per-PDF Opus
+# extraction (mirrors the paths used in aggregate_extractions). Used to detect
+# cross-source value conflicts BEFORE they are merged away by _merge_time_series.
+VALIDATION_FIELD_PATHS: dict[str, list[str]] = {
+    "Scope 1 GHG Emissions":             ["ghg_emissions", "scope1"],
+    "Scope 2 GHG (Location-based)":      ["ghg_emissions", "scope2_location"],
+    "Scope 2 GHG (Market-based)":        ["ghg_emissions", "scope2_market"],
+    "Scope 3 GHG Emissions (Total)":     ["ghg_emissions", "scope3_total"],
+    "Scope 3 Cat.15 Financed Emissions": ["ghg_emissions", "scope3_categories", "cat15_investments_financed"],
+    "Scope 3 Cat.6 Business Travel":     ["ghg_emissions", "scope3_categories", "cat6_business_travel"],
+    "Total GHG Emissions":               ["ghg_emissions", "total_emissions"],
+    "GHG Emission Intensity":            ["ghg_emissions", "emission_intensity"],
+    "Total Energy Consumption":          ["energy", "total_consumption"],
+    "Renewable Electricity Share":       ["energy", "renewable_electricity_pct"],
+    "Renewable Energy Share":            ["energy", "renewable_energy_pct"],
+    "Electricity Consumption":           ["energy", "electricity"],
+    "Total Water Withdrawal":            ["water", "total_withdrawal"],
+    "Water Recycled/Reused":             ["water", "water_recycled_pct"],
+    "Total Waste Generated":             ["waste", "total_waste"],
+    "Waste Recycled/Recovered":          ["waste", "waste_recycled_pct"],
+    "Total Employees":                   ["social", "total_employees"],
+    "Female Employees":                  ["social", "employees_female_pct"],
+    "Women in Management":               ["social", "management_female_pct"],
+    "Voluntary Employee Turnover":       ["social", "voluntary_turnover_pct"],
+    "Training Hours per Employee":       ["social", "training_hours_per_employee"],
+    "Lost-Time Injury Rate (LTIFR)":     ["social", "ltifr"],
+    "Gender Pay Gap":                    ["social", "gender_pay_gap_pct"],
+    "Employee Engagement Score":         ["social", "employee_engagement_score"],
+    "Women on Board":                    ["governance", "board_female_pct"],
+    "Independent Board Directors":       ["governance", "board_independent_pct"],
+    "CEO Pay Ratio":                     ["governance", "ceo_pay_ratio"],
+}
+
+
+def _traverse(doc: dict, path: list[str]):
+    """Follow a nested key path in a dict, returning the leaf or None."""
+    node = doc
+    for key in path:
+        node = node.get(key) if isinstance(node, dict) else None
+        if node is None:
+            return None
+    return node
+
+
+def _detect_metric_conflicts(extracted_docs: list[dict]) -> dict[str, str]:
+    """Find metrics reported with DIFFERENT values for the same year across docs.
+
+    Returns {metric_label: reason} for every metric that shows a genuine
+    cross-source disagreement (values differing by >1% for a shared year).
+    """
+    conflicts: dict[str, str] = {}
+    for label, path in VALIDATION_FIELD_PATHS.items():
+        by_year: dict[int, set] = {}
+        for doc in extracted_docs:
+            series = _traverse(doc, path)
+            if not isinstance(series, list):
+                continue
+            for entry in series:
+                if not isinstance(entry, dict):
+                    continue
+                yr, val = entry.get("year"), entry.get("value")
+                if yr is None or val is None:
+                    continue
+                try:
+                    yr = int(yr)
+                    val = float(val)
+                except (TypeError, ValueError):
+                    continue
+                by_year.setdefault(yr, set()).add(round(val, 3))
+        for yr, vals in by_year.items():
+            if len(vals) < 2:
+                continue
+            lo, hi = min(vals), max(vals)
+            if hi != 0 and abs(hi - lo) / abs(hi) > 0.01:
+                conflicts[label] = (
+                    f"conflicting values across sources for {yr} "
+                    f"({lo:g} vs {hi:g})"
+                )
+                break
+    return conflicts
+
+
+def build_validation_rows(extracted_docs: list[dict]) -> list[dict]:
+    """Turn per-PDF Opus extractions into pre-run Data Validation review rows.
+
+    Reuses the existing aggregation + KPI-flattening logic (no new heuristics),
+    then attaches a per-row confidence and flag so the frontend can surface a
+    review screen before committing to the full (expensive) analysis run.
+
+    Each row: {metric, value, unit, year, source, confidence, flagged, flag_reason}.
+    Flag reasons come from signal the extraction already exposes:
+      * ambiguous unit           — unit missing or a placeholder like "unit (specify)"
+      * conflicting values ...   — same metric/year differs across source documents
+      * missing value            — metric named but no numeric value found
+      * low-confidence extraction— overall PDF data quality is weak
+    """
+    if not extracted_docs:
+        return []
+
+    aggregated = aggregate_extractions(extracted_docs, "")
+    kpis = aggregated.get("kpis", []) or []
+    data_quality = aggregated.get("data_quality", "low")
+    conflicts = _detect_metric_conflicts(extracted_docs)
+
+    rows: list[dict] = []
+    for k in kpis:
+        metric = k.get("metric")
+        unit = (k.get("unit") or "").strip()
+        value = k.get("value")
+        source = k.get("source")
+        unit_l = unit.lower()
+
+        confidence = "high"
+        flagged = False
+        flag_reason = None
+
+        # 1) Ambiguous / placeholder unit
+        if (not unit) or ("specify" in unit_l) or unit_l == "unit" or unit_l.endswith("/unit"):
+            confidence, flagged = "low", True
+            flag_reason = "ambiguous unit"
+
+        # 2) Cross-source value conflict
+        elif metric in conflicts:
+            confidence, flagged = "low", True
+            flag_reason = conflicts[metric]
+
+        # 3) Missing value
+        elif value in (None, "", "null", "None"):
+            confidence, flagged = "low", True
+            flag_reason = "missing value — metric named but no figure extracted"
+
+        # 4) Weak overall evidence base -> downgrade to medium (soft signal)
+        elif data_quality == "low":
+            confidence = "medium"
+
+        # 5) Generic / fallback source citation -> medium
+        elif not source or source in ("PDF Report",):
+            confidence = "medium"
+
+        rows.append({
+            "metric": metric,
+            "value": value,
+            "unit": unit or None,
+            "year": k.get("year") or None,
+            "source": source,
+            "confidence": confidence,
+            "flagged": flagged,
+            "flag_reason": flag_reason,
+        })
+
+    return rows
+
+
+# ──────────────────────────────────────────────────────────────
 # PHASE 1 — Early text extraction (runs BEFORE the main AI analysis)
 # ──────────────────────────────────────────────────────────────
 async def discover_and_get_pdf_texts(
@@ -1156,6 +1485,7 @@ async def discover_and_get_pdf_texts(
                 base_url, client,
                 company_name=company_name,
                 seed_urls=claude_pdf_urls,   # inject Opus-found URLs into the crawler pool
+                log_fn=log_fn,               # surface per-report download/extract diagnostics
             )
 
         if pdfs:
