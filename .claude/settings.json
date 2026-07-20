@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk 'NR>=1439 && NR<=1572' \"/Users/swikrit/Claude/Projects/AI-assisted ESG consulting/screening/ESGIntel_Platform.html\")",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}
